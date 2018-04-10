@@ -1,0 +1,92 @@
+\documentclass[a4paper, oneside, 11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{upquote}
+\usepackage[utf8]{inputenc}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black]{hyperref}
+
+\setlength{\parindent}{0cm}
+\newcommand\Rule{\noindent\makebox[\textwidth]{\rule{\textwidth}{0.5pt}}}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage[explicit]{titlesec}
+\titleformat{\section}{\normalfont\Large\bfseries}{}{0em}{#1\ \thesection}
+
+\begin{document}
+
+{\huge Notes} \hfill {\huge Reinforcement Learning: An Introduction}\\
+\Rule\\
+\tableofcontents
+\mbox{}\\
+\Rule
+\mbox{}\\
+
+
+\clearpage
+\section{Chapter}
+Reinforcement learning is about how an agent can learn to interact with its environment. Reinforcement learning uses the formal framework of Markov decision processes to define the interaction between a learning agent and its environment in terms of states, actions, and rewards.
+
+\setcounter{subsection}{2}
+\subsection{Elements of Reinforcement Learning}
+\begin{description}
+     \item[Policy] defines the way that an agent acts, it is a mapping from perceived states of the world to actions. It may be stochastic.
+     \item[Reward] defines the goal of the problem. A number given to the agent as a (possibly stochastic) function of the state of the environment and the action taken.
+     \item[Value function] specifies what is good in the long run, essentially to maximise the expected reward. The central role of value estimation is arguably the most important thing that has been learned about reinforcement learning over the last six decades.
+     \item[Model] mimics the environment to facilitate planning. Not all reinforcement learning algorithms have a model (if they don't then they can't plan, i.e. must use trial and error, and are called model free).
+\end{description}
+
+
+\section{Chapter}
+Reinforcement learning involves evaluative feedback rather than instructive feedback. We get told whether our actions are good ones or not, rather than what the single best action to take is. This is a key distinction between reinforcement learning and supervised learning.
+
+\subsection{A $k$-armed Bandit Problem}
+In the $k$-armed bandit problem there are $k$ possible actions, each of which yields a numerical reward drawn from a stationary probability distribution for that action. We want to maximise the expected total reward, taking an action at each \emph{time step}. Some notation:
+
+\begin{itemize}
+    \item Index timesteps by $t$
+    \item Action $A_t$
+    \item Corresponding reward $R_t$
+    \item \emph{Value} of action $a$ is $q_*(a) = \mathbb{E}[R_t | A_t = a]$
+    \item Estimate of value of action $a$ at $t$ is denoted $Q_t(a)$
+\end{itemize}
+
+We therefore want to choose $\{a_1, \dots, a_T\}$ to maximise $\sum_{t = 1}^T q_*(a_t)$.\\
+\mbox{}\\ 
+At each timestep, the actions with the highest estimated reward are called the \emph{greedy} actions. If we take this action, we say that we are \emph{exploiting} our understanding of the values of actions. The other actions are known as \emph{non-greedy} actions, sometimes we might want to take one of these to improve our estimate of their value. This is called \emph{exploration}. The balance between exploration and exploitation is a key concept in reinforcement learning.
+
+
+\subsection{Action-value Methods}
+We may like to form estimates of the values of possible actions and then choose actions according to these estimates. Methods such as this are known as \emph{action-value methods}. There are, of course, many ways of generating the estimates $Q_t(a)$. \\
+\mbox{}\\
+An $\varepsilon$-greedy method is one in which with probability $\varepsilon$ we take a random draw from all of the actions (choosing each action with equal probability), providing some exploration.
+
+
+\setcounter{subsection}{5}
+\subsection{Tracking a Non-stationary Problem}
+If we decide to implement the sample average method, then at each iteration that we choose the given action we update our estimate by
+\begin{equation}
+    Q_{n+1} = Q_n + \frac1n [R_n - Q_n]
+\end{equation}
+Note that this has the (soon to be familiar) form
+\begin{equation}
+    \mathrm{NewEstimate} \gets \mathrm{OldEstimate} + \mathrm{StepSize}\times[\mathrm{Target} - \mathrm{OldEstimate}].
+\end{equation}
+\mbox{}\\
+If the problem was non-stationary, we might like to use a time weighted exponential average for our estimates (\emph{exponential recency-weighted average}). This corresponds to a constant step-size $\alpha \in (0, 1]$ (you can check).
+\begin{equation}
+    Q_{n+1} = Q_n + \alpha [R_n - Q_n].
+\end{equation}
+\mbox{}\\
+We might like to vary the step-size parameter. Write $\alpha_n(a)$ for the step-size after the $n^{\mathsf{th}}$ reward from action $a$. Of course, not all choices of $\alpha_n(a)$ will give convergent estimates of the values of $a$. To converge with probability 1 we must have
+\begin{equation}
+    \sum_n \alpha_n(a) = \infty \quad\quad \mathsf{and} \quad\quad  \sum_n \alpha_n(a)^2 < \infty.
+\end{equation}
+Meaning that the coefficients must be large enough to recover from initial fluctuations, but not so large that they don't converge in the long run. Although these conditions are used in theoretical work, they are seldom used in empirical work or applications. (Most reinforcement learning problems have non-stationary rewards, in which case convergence is undesirable.)
+
+
+
+\end{document}
