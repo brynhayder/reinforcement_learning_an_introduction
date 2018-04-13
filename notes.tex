@@ -1,15 +1,21 @@
 \documentclass[a4paper, oneside, 11pt]{article}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amssymb}
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{setspace}
 \usepackage{xcolor}
 \usepackage{upquote}
+\usepackage{dsfont}
 \usepackage[utf8]{inputenc}
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black]{hyperref}
 
 \setlength{\parindent}{0cm}
 \newcommand\Rule{\noindent\makebox[\textwidth]{\rule{\textwidth}{0.5pt}}}
+
+\newcommand\argmax{\operatorname*{argmax}}
+\newcommand\argmin{\operatorname*{argmin}}
+\renewcommand\P{\mathbb{P}}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -27,7 +33,7 @@
 
 
 \clearpage
-\section{Chapter}
+\section{Chapter 1}
 Reinforcement learning is about how an agent can learn to interact with its environment. Reinforcement learning uses the formal framework of Markov decision processes to define the interaction between a learning agent and its environment in terms of states, actions, and rewards.
 
 \setcounter{subsection}{2}
@@ -40,7 +46,7 @@ Reinforcement learning is about how an agent can learn to interact with its envi
 \end{description}
 
 
-\section{Chapter}
+\section{Chapter 2}
 Reinforcement learning involves evaluative feedback rather than instructive feedback. We get told whether our actions are good ones or not, rather than what the single best action to take is. This is a key distinction between reinforcement learning and supervised learning.
 
 \subsection{A $k$-armed Bandit Problem}
@@ -65,7 +71,7 @@ We may like to form estimates of the values of possible actions and then choose 
 An $\varepsilon$-greedy method is one in which with probability $\varepsilon$ we take a random draw from all of the actions (choosing each action with equal probability), providing some exploration.
 
 
-\setcounter{subsection}{5}
+\setcounter{subsection}{4}
 \subsection{Tracking a Non-stationary Problem}
 If we decide to implement the sample average method, then at each iteration that we choose the given action we update our estimate by
 \begin{equation}
@@ -86,6 +92,32 @@ We might like to vary the step-size parameter. Write $\alpha_n(a)$ for the step-
     \sum_n \alpha_n(a) = \infty \quad\quad \mathsf{and} \quad\quad  \sum_n \alpha_n(a)^2 < \infty.
 \end{equation}
 Meaning that the coefficients must be large enough to recover from initial fluctuations, but not so large that they don't converge in the long run. Although these conditions are used in theoretical work, they are seldom used in empirical work or applications. (Most reinforcement learning problems have non-stationary rewards, in which case convergence is undesirable.)
+
+\subsection{Optimistic Initial Values}
+The exponential recency weighted method is biased by the initial value one gives. If we like, we may set initial value estimates artificially high to encourage exploration in the short run -- this is called \emph{optimistic initial values}. This is a useful trick for stationary problems, but does not apply so well to non-stationary problems as the added exploration is only temporary.
+
+
+\subsection{Upper-Confidence Bound Action Selection}
+We might like to discriminate between potential explorative actions. Note that $\varepsilon$-greedy does not do this. We define the \emph{upper-confidence bound} action at $t$ as follows
+\begin{equation}
+    A_t \doteq \argmax_{a}\left[ \, Q_t(a)+ c \sqrt{\frac{\mathrm{ln}(t)}{N_t(a)}} \, \right]
+\end{equation}
+where $Q_t(a)$ is the value estimate for the action $a$ at time $t$, $c > 0$ is a parameter that controls the degree of exploration and $N_t(a)$ is the number of times that $a$ has been selected by time $t$. If $N_t(a) = 0$ then we consider $a$ a maximal action.\\
+
+This approach favours actions with a higher estimated rewards but also favours actions with uncertain estimates (more precisely, actions that have been chosen few times).
+
+
+\subsection{Gradient Bandit Algorithms}
+Suppose that we choose actions probabilistically based on a preference for each action, $H_t(a)$. Let the action at $t$ be denoted by $A_t$. We then define the probability of choosing action $a$ via the softmax
+\begin{equation}
+    \pi_t(a) \doteq \P{}(A_t = a) = \frac{e^{H_t(a)}}{\sum_i e^{H_t(i)}}.
+\end{equation}
+We then iteratively perform updates according to 
+\begin{equation}
+    H_{t+1}(a) = H_t(a) + (R_t - \bar{R})(\mathds{1}_{A_t = a} - \pi_t(a)).
+\end{equation}
+The box in the notes shows that this is an instance of stochastic gradient ascent since the expected value of the update is equal to the update when doing gradient ascent on the (total) expected reward.
+
 
 
 
