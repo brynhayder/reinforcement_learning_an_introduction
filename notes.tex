@@ -16,11 +16,10 @@
 \newcommand\argmax{\operatorname*{argmax}}
 \newcommand\argmin{\operatorname*{argmin}}
 \renewcommand\P{\mathbb{P}}
+\newcommand\Epi{\mathbb{E}_\pi}
 
 \renewcommand{\familydefault}{\sfdefault}
 
-\usepackage[explicit]{titlesec}
-\titleformat{\section}{\normalfont\Large\bfseries}{}{0em}{#1\ \thesection}
 
 \begin{document}
 
@@ -33,7 +32,7 @@
 
 
 \clearpage
-\section{Chapter 1}
+\section{Introduction}
 Reinforcement learning is about how an agent can learn to interact with its environment. Reinforcement learning uses the formal framework of Markov decision processes to define the interaction between a learning agent and its environment in terms of states, actions, and rewards.
 
 \setcounter{subsection}{2}
@@ -46,7 +45,7 @@ Reinforcement learning is about how an agent can learn to interact with its envi
 \end{description}
 
 
-\section{Chapter 2}
+\section{Multi-armed Bandits}
 Reinforcement learning involves evaluative feedback rather than instructive feedback. We get told whether our actions are good ones or not, rather than what the single best action to take is. This is a key distinction between reinforcement learning and supervised learning.
 
 \subsection{A $k$-armed Bandit Problem}
@@ -114,9 +113,154 @@ Suppose that we choose actions probabilistically based on a preference for each 
 \end{equation}
 We then iteratively perform updates according to 
 \begin{equation}
-    H_{t+1}(a) = H_t(a) + (R_t - \bar{R})(\mathds{1}_{A_t = a} - \pi_t(a)).
+    H_{t+1}(a) = H_t(a) + (R_t - \bar{R}_t)(\mathds{1}_{A_t = a} - \pi_t(a)),
 \end{equation}
-The box in the notes shows that this is an instance of stochastic gradient ascent since the expected value of the update is equal to the update when doing gradient ascent on the (total) expected reward.
+where $\bar{R}_t$ is the mean of previous rewards. The box in the notes shows that this is an instance of stochastic gradient ascent since the expected value of the update is equal to the update when doing gradient ascent on the (total) expected reward.
+
+
+\section{Finite Markov Decision Processes}
+We say that a system has the \emph{Markov property} if each state includes all information about the previous states and actions that makes a difference to the future.\\
+
+The MDP provides an abstraction of the problem of goal-directed learning from interaction by modelling the whole thing as three signals: action, state, reward.\\
+
+Together, the MDP and agent give rise to the \emph{trajectory} $S_0$, $A_0$, $R_1$, $S_1$, $A_1$, $S_2$, $R_2$, $\dots$. The action choice in a state gives rise (stochastically) to a state and corresponding reward.
+
+\subsection{The Agent–Environment Interface}
+We consider finite Markov Decision Processes (MDPs). The word finite refers to the fact that the states, rewards and actions form a finite set. This framework is useful for many reinforcement learning problems.\\
+
+We call the learner or decision making component of a system the \emph{agent}. Everything else is the \emph{environment}. General rule is that anything that the agent does not have absolute control over forms part of the environment. For a robot the environment would include it's physical machinery. The boundary is the limit of absolute control of the agent, not of its knowledge.\\
+
+The MDP formulation is as follows. Index time-steps by $t \in \mathbb{N}$. Then actions, rewards, states at $t$ represented by $A_t \in \mathcal{A}(s)$, $R_t \in \mathcal{R} \subset \mathbb{R}$, $S_t \in \mathcal{S}$. Note that the set of available actions is dependent on the current state.\\
+
+A key quantity in an MDP is the following function, which defines the \emph{dynamics} of the system.
+\begin{equation}
+    p(s', r | s, a) \doteq \P{} (S_t = s', R_t = r | S_{t-1} = s, A_{t-1} = a)
+\end{equation}
+From this quantity we can get other useful functions. In particular we have the following: 
+
+\begin{description}
+    \item[state-transition probabilities]
+\begin{equation}
+    p(s' | s, a) \doteq \P{}(S_t = s'| S_{t-1} = s, A_{t-1}=A) = \sum_{r \in \mathcal{R}} p(s', r | s, a)
+\end{equation}
+note the abuse of notation using $p$ again; and,
+    \item[expected reward]
+\begin{equation}
+    r(s, a) = \mathbb{E}[R_t | S_{t-1} = s, A_{t-1} = a] = \sum_{r \in \mathcal{R}} r \sum_{s' \in \mathcal{S}} p(s', r | s, a).
+\end{equation}
+\end{description}
+
+
+\subsection{Goals and rewards}
+We have the \emph{reward hypothesis}, which is a central assumption in reinforcement learning:
+\begin{quote}
+    All of what we mean by goals and purposes can be well thought of as the maximisation of the expected value of the cumulative sum of a received scalar signal (called reward).
+\end{quote}
+
+
+\subsection{Returns and Episodes}
+Denote the sequence of rewards from time $t$ as $R_{t+1}$, $R_{t+2}$, $R_{t+3}$, $\dots$. We seek to maximise the \emph{expected return} $G_t$ which is some function of the rewards. The simplest case is where $G_t = \sum_{\tau > t} R_\tau$.\\
+
+In some applications there is a natural final time-step which we denote $T$. The final time-step corresponds to a \emph{terminal state} that breaks the agent-environment interaction into subsequences called \emph{episodes}. Each episode ends in the same terminal state, possibly with a different reward. Each starts independently of the last, with some distribution of starting states. We denote the set of states including the terminal state as $\mathcal{S}^+$\\
+
+Sequences of interaction without a terminal state are called \emph{continuing tasks}. \\
+
+We define $G_t$ using the notion of \emph{discounting}, incorporating the \emph{discount rate} $0 \leq \gamma \leq 1$. In this approach the agent chooses $A_t$ to maximise 
+\begin{equation}
+    G_t \doteq \sum_{k = 0}^{\infty} \gamma^k R_{t+k+1}.
+\end{equation}
+ This sum converges wherever the sequence $R_t$ is bounded. If $\gamma = 0$ the agent is said to be myopic. We define $G_T = 0$. Note that
+\begin{equation}
+     G_t = R_{t+1} + \gamma G_{t+1}.
+\end{equation}\\
+
+Note that in the case of finite time steps or an episodic problem, then the return for each episode is just the sum (or whatever function) of the returns in that episode.
+
+
+\subsection{Unified Notation for Episodic and Continuing Tasks}
+We want to unify the notation for episodic and continuing learning. \\
+
+We introduce the concept of an \emph{absorbing state}. This state transitions only to itself and gives reward of zero.\\
+
+To incorporate the (disjoint) possibilites that $T=\infty$ or $\gamma = 1$ in our formulation of the return, we might like to write
+\begin{equation}
+    G_t \doteq \sum_{k=t+1}^T \gamma^{k-t-1}R_k.
+\end{equation}
+
+
+\subsection{Policies \& Value Functions}
+\subsubsection*{Policy}
+A \emph{policy} $\pi(a|s)$ is a mapping from states to the probability of selecting actions in that state. If an agent is following policy $\pi$ and at time $t$ is in state $S_t$, then the probability of taking action $A_t$ is $\pi(a|s)$. Reinforcement learning is about altering the policy from experience.\\
+
+\subsubsection*{Value Functions}
+As we have seen, a central notion is the value of a state. The \emph{state-value function} of state $s$ under policy $\pi$ is the expected return starting in $s$ and following $\pi$ thereafter. For MDPs this is
+\begin{equation}
+    v_\pi \doteq \Epi[G_t | S_t = s],
+\end{equation}
+where the subscript $\pi$ denotes that this is an expectation taken conditional on the agent following policy $\pi$. \\
+
+Similarly, we define the \emph{action-value function} for policy $\pi$ to be the expected return from taking action $a$ in state $s$ and following $\pi$ thereafter
+\begin{equation}
+    q_\pi(s, a) \doteq \Epi[G_t | S_t = s, A_t = a].
+\end{equation}
+
+The value functions $v_\pi$ and $q_\pi$ can be estimated from experience.\\
+
+\subsubsection*{Bellman Equation}
+
+The Bellman equations express the value of a state in terms of the value of its successor states. They are a consistency condition on the value of states. 
+
+\begin{align}
+    v_{\pi}(s) &= \Epi{}[G_t | S_t = s] \\
+             &= \Epi{}[R_{t+1} + \gamma G_{t+1} | S_t = s] \\
+             &= \sum_{a \in \mathcal{A}(s)} \pi(a|s) \sum_{s', r} p(s', r | s, a) \left[r + \gamma \Epi{}[G_{t+1} | S_{t+1} = s']\right] \\
+             &=  \sum_{a \in \mathcal{A}(s)} \pi(a|s) \sum_{s', r} p(s', r | s, a) [r + \gamma v_{\pi}(s')]
+\end{align} 
+    
+
+The value function $v_\pi$ is the unique solution to its Bellman equation.
+
+
+\subsection{Optimal Policies \& Optimal Value Functions}
+We say that $\pi \geq \pi'$ iff $v_\pi (s) \geq v_{\pi'}(s) \quad \forall s \in \mathcal{S}$. The policies that are optimal in this sense are called optimal policies. There may be multiple optimal policies. We denote all of them by $\pi_*$.\\
+
+The optimal policies share the same optimal value function $v_*(s)$
+\begin{equation}
+    v_*(s) \doteq \max_\pi v_\pi(s) \quad \forall s \in \mathcal{S}.
+\end{equation}
+They also share the same optimal action-value function $q_*(s, a)$
+\begin{equation}
+    q_*(s, a) = \max_\pi q_\pi (s, a) \quad \forall s \in \mathcal{S}, a \in \mathcal{A}(s),
+\end{equation}
+this is the expected return from taking action $a$ in state $s$ and thereafter following the optimal policy.
+\begin{equation}
+    q_*(s, a) = \Epi{} [R_{t+1} + \gamma v_*(S_{t+1}) | S_{t} = s, A_t = a].
+\end{equation}\\
+
+Since $v_*$ is a value function, it must satisfy a Bellman equation (since it is simply a consistency condition). However, $v_*$ corresponds to a policy that always selects the maximal action. Hence 
+\begin{equation}
+    v_*(s) = \max_a \sum_{s', r} p(s', r|s, a) [r + \gamma v_*(s')].
+\end{equation}
+Similarly,
+\begin{align}
+    q_*(s, a) &= \mathbb{E} [R_{t+1} + \gamma \max{a'}q_*(S_{t+1}, a') | S_t=s, A_t = a]\\
+              &= \sum_{s', r} p(s', r| s, a ) [r + \gamma \max_{a'}q_*(s', a')].
+\end{align} \\
+
+Note that once one identifies an optimal value function $v_*$, then it is simple to find an optimal policy. All that is needed is for the policy to act greedily with respect to $v_*$. Since $v_*$ encodes all information on future rewards, we can act greedily and still make the long term optimal decision (according to our definition of returns).\\
+
+Having $q_*$ is even better since we don't need to check $v_*(s')$ in the succeeding states $s'$, we just find $a_* = \argmax_a q_*(s, a)$ when in state $s$.
+
+
+\section{Dynamic Programming}
+
+
+% this is up to the bellman equations bit
+
+
+
+
+
 
 
 

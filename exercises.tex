@@ -1,8 +1,10 @@
 \documentclass[a4paper, oneside, 11pt]{article}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amssymb}
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{setspace}
+\usepackage{dsfont}
 \usepackage{xcolor}
 \usepackage{upquote}
 \usepackage[utf8]{inputenc}
@@ -15,8 +17,12 @@
 
 \newcommand\ProgrammingExercise{This is a programming exercise. For the relevant code/notebook please see \href{\RepoAddress{}}{the repo}.}
 
-\renewcommand\P{\mathbb{P}}
+\newcommand\argmax{\operatorname*{argmax}}
+\newcommand\argmin{\operatorname*{argmin}}
 
+\newcommand\Epi{\mathbb{E}_\pi}
+
+\renewcommand\P{\mathbb{P}}
 \renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
@@ -41,7 +47,7 @@ Note that equation numbers in questions will refer to the original text.
 \vfill
 \end{center}
 \clearpage
-\section{Chapter 1}
+\section{Introduction}
 \subsection{Exercise 1.1: Self-Play}
 \subsubsection{Q}
 Suppose, instead of playing against a random opponent, the reinforcement learning algorithm described above played against itself, with both sides learning. What do you think would happen in this case? Would it learn a different policy for selecting moves?
@@ -98,7 +104,7 @@ I'm not too sure here...
 
 
 
-\section{Chapter 2}
+\section{Multi-armed Bandits}
 \subsection{Exercise 2.1}
 \subsubsection{Q}
 In $\varepsilon$-greedy action selection, for the case of two actions and $\varepsilon = 0.5$, what is the probability that the greedy action is selected?
@@ -224,9 +230,305 @@ Make a figure analogous to Figure 2.6 for the non-stationary case outlined in Ex
 \includegraphics[width=\textwidth]{data/exercise_output/ex_2_11/parameter_study.png}
 
 
-\section{Chapter 3}
+\section{Finite Markov Decision Processes}
+
+\subsection{Exercise 3.1}
+\subsubsection{Q}
+Devise three example tasks of your own that fit into the MDP framework, identifying for each its states, actions, and rewards. Make the three examples as \emph{different} from each other as possible. The framework is abstract and flexible and can be applied in many different ways. Stretch its limits in some way in at least one of your examples.
+
+\subsubsection{A}
+\begin{enumerate}
+    \item Simple example is a robot that hoovers a room. The state can be how much dust there is on the ground and where the robot is (including it's orientation). Actions can be to move and hoover. The reward can be the amount by which it reduces dust in the room on that action. This is Markov because all that is important from the previous state to the future is where the dust is left (maybe also how much).
+    \item Outlandish example is a football coach. Actions are playing strategies. Rewards are goals. State is current score, team fitness, etc..
+    \item financial trader. State is their current holdings on an asset. Reward is money from a trade. Actions are buy/sell. Maybe not markov because the environment may change predictably based on information from multiple steps ago.
+\end{enumerate}
+
+\subsection{Exercise 3.2}
+\subsubsection{Q}
+Is the MDP framework adequate to usefully represent \emph{all} goal-directed learning tasks? Can you think of any clear exceptions?
+
+\subsubsection{A}
+The main thing about the MDP is that Markov property. There are tasks where this does not hold. For instance, in Poker, the previous states will determine what is in the deck and what is not. This does not obey Markov property.
+
+\subsection{Exercise 3.3}
+\subsubsection{Q}
+Consider the problem of driving. You could define the actions in terms of the accelerator, steering wheel, and brake, that is, where your body meets the machine. Or you could define them farther out—say, where the rubber meets the road, considering your actions to be tire torques. Or you could define them farther in—say, where your brain meets your body, the actions being muscle twitches to control your limbs. Or you could go to a really high level and say that your actions are your choices of \emph{where} to drive. What is the right level, the right place to draw the line between agent and environment? On what basis is one location of the line to be preferred over another? Is there any fundamental reason for preferring one location over another, or is it a free choice?
+
+\subsubsection{A}
+
+\begin{itemize}
+    \item The natural distinction depends on the task. If the task is to go from one location to another, the actions might be in terms of directing the car and altering its speed. 
+    \item This also depends on what we consider to be the decision making part here. If we consider the decisions to be made by the brain of a human driving, then their physical body will form part of the environment -- if they break their leg then it will effect their goal.
+    \item Actions have to be things that the agent can actually control. Take the example of an autonomous vehicle. One might consider that the agent has complete control over the car's break, accelerator and steering wheel. These operations would form the actions for the agent. 
+\end{itemize}
 
 
+\subsection{Exercise 3.4}
+\subsubsection{Q}
+Give a table analogous to the one in Example 3.3, but for $p(s', r| s, a)$. It should have columns $s, a, s', r$, and a row for every 4-tuple for which $p(s', r | s, a) > 0$.
+
+\subsubsection{A}
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll|ll|c}
+    $s$ & $a$ & $s'$ & $r$ & $p(s', r | s, a)$ \\
+    \hline
+     \texttt{high}& \texttt{search}&  \texttt{high}&  $r_{\texttt{search}}$& $\alpha$  \\
+     \texttt{high}& \texttt{search}&  \texttt{low}&   $r_{\texttt{search}}$& $1 - \alpha$ \\
+     \texttt{high}& \texttt{wait}&  \texttt{high}&   $r_{\texttt{wait}}$&  $1$ \\
+     \texttt{low}& \texttt{recharge}&   \texttt{high}&    $0$&   $1$\\
+     \texttt{low}& \texttt{search}&  \texttt{high}&  $-3$& $1 - \beta$  \\
+     \texttt{low}& \texttt{search}&  \texttt{low}&   $r_{\texttt{search}}$& $\beta $\\
+     \texttt{low}& \texttt{wait}&  \texttt{low}&   $r_{\texttt{wait}}$&  $1$
+\end{tabular}
+
+
+\caption{Transition table}
+\label{table:3.4}
+\end{table}
+
+
+\subsection{Exercise 3.5}
+\subsubsection{Q}
+The equations in Section 3.1 are for the continuing case and need to be modified (very slightly) to apply to episodic tasks. Show that you know the modifications needed by giving the modified version of (3.3)
+
+\subsubsection{A}
+\begin{equation}
+    \sum_{s' \in \mathcal{S}^{+}} \sum_{r \in \mathcal{R}} p(s', r | s, a) = 1
+\end{equation}
+
+
+\subsection{Exercise 3.6}
+\subsubsection{Q}
+Suppose you treated pole-balancing as an episodic task but also used discounting, with all rewards zero except for $-1$ upon failure. What then would the return be at each time? How does this return differ from that in the discounted, continuing formulation of this task?
+
+\subsubsection{A}
+Note that the pole will fall eventually with probability 1
+\begin{equation}
+    G_t = - \gamma^{T - t}.
+\end{equation}
+Whereas in the continuing case the value is
+\begin{equation}
+    G_t = - \sum_{k \in \mathcal{K}} \gamma^{k - t},
+\end{equation}
+where $\mathcal{K}$ is the set of times after $t$ at which the pole falls over.
+
+\subsection{Exercise 3.7}
+\subsubsection{Q}
+Imagine that you are designing a robot to run a maze. You decide to give it a reward of $+1$ for escaping from the maze and a reward of zero at all other times. The task seems to break down naturally into episodes--the successive runs through the maze--so you decide to treat it as an episodic task, where the goal is to maximize expected total reward (3.7). After running the learning agent for a while, you find that it is showing no improvement in escaping from the maze. What is going wrong? Have you effectively communicated to the agent what you want it to achieve?
+
+\subsubsection{A}
+If the agent keeps going randomly, it will reach the end of the maze with probability 1, so the value of $G$ under most strategies is $1$. What you actually want is for the thing to leave the maze as quickly as possible.\\
+
+Note also that there are some instances in which the agent might just get stuck in a loop. You would have to impose another rule to put the agent into a terminal state here.
+
+\subsection{Exercise 3.8}
+\subsubsection{Q}
+Suppose $\gamma = 0.5$ and the following sequence of rewards is received $R_1=-1$, $R_2 =2$,$R_3 =6$,$R_4 =3$, and $R_5 =2$, with $T =5$. What are $G_0$, $G_1$, $\dots$, $G_5$? Hint: Work backwards.
+
+\subsubsection{A}
+$G_0 = 2$, $G_1 = 3$, $G_2 = 2$, $G_3 = \frac12$, $G_4 = \frac18$, $G_5=0$.
+
+\subsection{Exercise 3.9}
+\subsubsection{Q}
+Suppose $\gamma = 0.9$ and the reward sequence is $R_1 = 2$ followed by an infinite sequence of $7$s. What are $G_1$ and $G_0$?
+\subsubsection{A}
+\begin{align}
+    G_1 &= 7 \frac{\gamma}{1 - \gamma} \\
+    G_0 &= 2 + 7 \frac{\gamma}{1 - \gamma}
+\end{align}
+
+
+\subsection{Exercise 3.10}
+\subsubsection{Q}
+Prove (3.10).
+
+\subsubsection{A}
+Take $r \in \mathbb{C}$ with $|r| < 1$, then
+\begin{align*}
+    S_N &\doteq \sum_{i=0}^N r^i \\
+    rS_N - S_N &= r^{N+1} - 1 \\
+    S_N &= \frac{1 - r^{N+1}}{1 - r} \\
+    S &\doteq \lim_{N \to \infty} S_N = \frac{1}{1 - r}
+\end{align*}
+
+\subsection{Exercise 3.11}
+\subsubsection{Q}
+If the current state is $S_t$, and actions are selected according to stochastic policy $\pi$, then what is the expectation of $R_{t+1}$ in terms of $\pi$ and the four-argument function $p$ (3.2)?
+
+\subsubsection{A}
+\begin{equation}
+    \Epi{} [R_{t+1} | S_t = s] = \sum_{a} \pi(a | s) \sum_{s', r} r p(s', r | s, a)
+\end{equation}
+
+
+\subsection{Exercise 3.12}
+\subsubsection{Q}
+The Bellman equation (3.14) must hold for each state for the value function $v_\pi$ shown in Figure 3.2 (right) of Example 3.5. Show numerically that this equation holds for the center state, valued at $+0.7$, with respect to its four neighbouring states, valued at $+2.3$, $+0.4$, $-0.4$, and $+0.7$. (These numbers are accurate only to one decimal place.)
+
+\subsubsection{A}
+\begin{align*}
+    v_\pi(\mathtt{center}) &\doteq \sum_a \pi(a | s) \sum_{s', r} p(s', r | s, a)[r + \gamma v_\pi(s')] \\
+    & = \frac14 \times 0.9 \times \sum_{s'} v_\pi(s')\\
+    & = \frac14 \times 0.9 \times 3.0 \\
+    & = 0.675
+\end{align*}
+
+
+\subsection{Exercise 3.13}
+\subsubsection{Q}
+What is the Bellman equation for action values, that is, for $q_\pi$? It must give the action value $q_\pi(s, a)$ in terms of the action values, $q_\pi(s',a')$, of possible successors to the state–action pair $(s,a)$. Hint: the backup diagram to the right corresponds to this equation. Show the sequence of equations analogous to (3.14), but for action values.
+
+\subsubsection{A}
+\begin{align*}
+    q_\pi &\doteq \Epi[G_t | S_t=s, A_t=a]\\
+          &= \Epi[R_{t+1}| S_t=s, A_t=a] + \gamma \Epi[G_{t+1} |S_t = s, A_t = a] \\
+          &= \sum_{s', r} p(s', r|s, a)r + \gamma \sum_{s', r} p(s', r|s, a) \sum_{a'}\pi(a'|s')\Epi[G_{t+1}| S_{t+1}=s', A_{t+1}=a'] \\
+          &= \sum_{s', r} p(s', r| s, a) [r + \gamma \sum_{a'}\pi(a'|s')q_\pi(s', a')]
+\end{align*}
+
+
+\subsection{Exercise 3.14}
+\subsubsection{Q}
+In the gridworld example, rewards are positive for goals, negative for running into the edge of the world, and zero the rest of the time. Are the signs of these rewards important, or only the intervals between them? Prove, using (3.8), that adding a constant $c$ to all the rewards adds a constant, $v_c$, to the values of all states, and thus does not affect the relative values of any states under any policies. What is $v_c$ in terms of $c$ and $\gamma$?
+
+\subsubsection{A}
+We choose actions by relative (additive) values. Add $c$ to all states and 
+\begin{equation}
+    G_t \mapsto G_t + \frac{c}{1 - \gamma}
+\end{equation}
+so relative values unchanged.\\
+
+$v_c = \frac{c}{1 - \gamma}$
+
+\subsection{Exercise 3.15}
+\subsubsection{Q}
+Now consider adding a constant $c$ to all the rewards in an episodic task, such as maze running. Would this have any effect, or would it leave the task unchanged as in the continuing task above? Why or why not? Give an example.
+
+\subsubsection{A}
+Let terminal time be $T$. In this case we have 
+\begin{equation}
+    G_t \mapsto G_t + c\frac{1 - \gamma^T}{1 - \gamma},
+\end{equation}
+so if the agent can procrastinate termination, then all else being equal it will increase $v_\pi$.\\
+
+Suppose that we have an episodic task with one state $S$ and two actions $A_0, A_1$. $A_0$ takes agent to terminal state with reward $1$, while $A_1$ takes agent back to $S$ with reward $0$. In this case the agent should terminate to maximise reward. \\ 
+
+If we add $1$ to each reward then the return for doing $A_1$ forever is $\frac{1}{1-\gamma}$. Which can be bigger than $2$ if we choose a discount factor smaller than $\frac12$.
+
+\subsection{Exercise 3.16}
+\subsubsection{Q}
+\includegraphics[width=\textwidth]{data/exercise_questions/ex_3_16_question.png}
+ 
+\subsubsection{A}
+\begin{align*}
+    v_\pi(s) & = \Epi[q_\pi(S_t, A_t) |S_t = s, A_t = a] \\ 
+          & = \sum_a \pi(a|s) q_\pi(s, a)
+\end{align*}
+
+\subsection{Exercise 3.17}
+\subsubsection{Q}
+\includegraphics[width=\textwidth]{data/exercise_questions/ex_3_17_question.png}
+ 
+\subsubsection{A} 
+\begin{align*}
+    q_\pi(s, a) & = \Epi[R_{t+1} + v_\pi(s') |S_t = s, A_t = a] \\ 
+          & = \sum_{s', r} p(s', r|s, a) [r + v_\pi(s')]
+\end{align*}
+
+
+\subsection{Exercise 3.18}
+\subsubsection{Q}
+Draw or describe the optimal state-value function for the golf example.
+
+\subsubsection{A}
+(Using the pictures.) Optimal state value gives values according to \texttt{driver} when off the green, then according to \texttt{putter} on the green.\\
+
+Optimal policy is to use \texttt{driver} when off green and \texttt{putter} when on green.
+ 
+ 
+\subsection{Exercise 3.19}
+\subsubsection{Q}
+ Draw or describe the contours of the optimal action-value function for putting, $q_*(s, \mathtt{putter})$, for the golf example.
+
+\subsubsection{A}
+Should be the same as the value for the policy that always uses the \texttt{putter}.
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_3_19/ex_3_19_answer.png}
+
+
+\subsection{Exercise 3.20}
+\subsubsection{Q}
+\includegraphics[width=\textwidth]{data/exercise_questions/ex_3_20_question.png}
+ 
+\subsubsection{A}
+When $\gamma=0$, $v_{\pi_{\mathtt{left}}}$ is optimal. When $\gamma = 0.5$, they are both optimal. When $\gamma=0.9$, $v_{\pi_{\mathtt{right}}}$ is optimal.
+
+\subsection{Exercise 3.21}
+\subsubsection{Q}
+Give the Bellman equation for $q_*$ for the recycling robot.
+
+\subsubsection{A}
+This is just writing out the equation below, filling in the values given in the robot example.
+\begin{equation}
+    q_*(s, a) = \sum_{s', r} p(s', r | s, a)[r + \gamma \max_{a'} q_*(s', a')]
+\end{equation}
+
+\subsection{Exercise 3.22}
+\subsubsection{Q}
+Figure 3.5 gives the optimal value of the best state of the gridworld as $24.4$, to one decimal place. Use your knowledge of the optimal policy and (3.8) to express this value symbolically, and then to compute it to three decimal places.
+
+\subsubsection{A}
+All actions tak the agent to $A'$ with reward $10$. We can see that $\gamma = 16.0 / 17.8 = 0.9$. This means that
+\begin{equation}
+    v = 10 + 16 \times 0.9 = 24.4.
+\end{equation}
+This is using the following framework
+\begin{equation}
+    v_*(s) = \max_{a}\sum_{s', r} p (s', r| s, a)[r + \gamma v_*(s')].
+\end{equation}
+
+
+\subsection{Exercise 3.23}
+\subsubsection{Q}
+Give an equation for $v_*$ in terms of $q_*$
+
+\subsubsection{A}
+\begin{equation}
+    v_*(s) = \sum_a \pi^*(a | s) q_*(s, a)
+\end{equation}
+
+
+\subsection{Exercise 3.24}
+\subsubsection{Q}
+Give an equation for $q_*$ in terms of $v_*$ and the world's dynamics $p(s', r| s, a)$.
+
+\subsubsection{A}
+\begin{align}
+    q_* (s, a) &= \mathbb{E} [ R_{t+1} + \gamma v_*(S_{t+1}) | S_t = s, A_t = a] \\
+    &= \sum_{s', r} (r + \gamma v_*(s'))p(s', r | s, a)
+\end{align} 
+
+
+\subsection{Exercise 3.25}
+\subsubsection{Q}
+Give an equation for $\pi_*$ in terms of $q_*$.
+
+\subsubsection{A}
+This is just any policy that acts greedily w.r.t. the optimal action-value function.
+\begin{equation}
+    \pi_* (a|s) = \frac{\mathds{1}\{a = \argmax_{a'} q_*(a', s)\}}{\sum_{a} \mathds{1}\{a = \argmax_{a'}q_*(a', s)\}}
+\end{equation} 
+
+\subsection{Exercise 3.26}
+\subsubsection{Q}
+Give an equation for $\pi_*$ in terms of $v_*$ and the world's dynamics $p(s', r| s, a)$.
+
+\subsubsection{A}
+This is just the answer to 3.25 with the answer to 3.24 substituted in for $q_*$.
+
+
+\section{Dynamic Programming}
 
 
 
