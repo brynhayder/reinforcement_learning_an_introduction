@@ -8,3 +8,6 @@
 ## code
 - docstrings
 - tests for bandit problems code
+- fix weird virtual environment behaviour (root conda getting in the way when you type source)
+
+

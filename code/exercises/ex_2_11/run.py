@@ -17,10 +17,10 @@ from bandits import (
     ExponentialRecencyWeightedEstimator,
     SampleAverageEstimator,
     EpsilonGreedyActor,
-    ActionValueBanditAgent
+    ActionValueBanditAgent,
+    utils
 )
 import constants as c
-from exercises import utils
 
 
 N_STEPS = 200000

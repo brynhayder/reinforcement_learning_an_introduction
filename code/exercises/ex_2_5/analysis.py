@@ -19,6 +19,7 @@ from exercises import plotting
 # also make some charts of how the values converge as the real ones move
 # but for this you'll need the samples!
 
+
 def load_file(name):
     return pd.read_pickle(
             os.path.join(c.Paths.exercise_output, 'ex_2_5', name),

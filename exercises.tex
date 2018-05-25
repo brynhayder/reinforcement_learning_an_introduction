@@ -15,7 +15,7 @@
 
 \newcommand\RepoAddress{https://github.com/brynhayder/reinforcement_learning_an_introduction}
 
-\newcommand\ProgrammingExercise{This is a programming exercise. For the relevant code/notebook please see \href{\RepoAddress{}}{the repo}.}
+\newcommand\ProgrammingExercise{This is a programming exercise. For the relevant code please see \href{\RepoAddress{}}{the repo}.}
 
 \newcommand\argmax{\operatorname*{argmax}}
 \newcommand\argmin{\operatorname*{argmin}}
@@ -529,6 +529,22 @@ This is just the answer to 3.25 with the answer to 3.24 substituted in for $q_*$
 
 
 \section{Dynamic Programming}
+
+
+\subsection{Exercise 4.7 (programming): Jack's Car Rental}
+
+\includegraphics[width=\textwidth]{data/exercise_questions/jacks_car_rental_example.png}
+
+First we reproduce the original results.
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_4_7/jacks_car_rental/jacks_car_rental.png}
+
+\subsubsection{Q}
+Write a program for policy iteration and re-solve Jack’s car rental problem with the following changes. One of Jack’s employees at the first location rides a bus home each night and lives near the second location. She is happy to shuttle one car to the second location for free. Each additional car still costs \$$2$, as do all cars moved in the other direction. In addition, Jack has limited parking space at each location. If more than $10$ cars are kept overnight at a location (after any moving of cars), then an additional cost of \$$4$ must be incurred to use a second parking lot (independent of how many cars are kept there). These sorts of nonlinearities and arbitrary dynamics often occur in real problems and cannot easily be handled by optimisation methods other than dynamic programming. To check your program, first replicate the results given for the original problem. If your computer is too slow for the full problem, cut all the numbers of cars in half.
+
+\subsubsection{A}
+\ProgrammingExercise\\
+
 
 
 

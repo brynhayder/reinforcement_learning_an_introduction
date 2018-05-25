@@ -13,7 +13,7 @@ import pandas as pd
 
 import constants as c
 from bandits import SampleAverageEstimator, ExponentialRecencyWeightedEstimator, ActionValueBanditAgent, EpsilonGreedyActor
-from exercises import utils
+from bandits import utils
 
 from concurrent.futures import ProcessPoolExecutor
 
@@ -54,7 +54,6 @@ def new_agent():
                     random_state=AGENT_RANDOM_STATE
             )
     )
-
 
 
 if __name__ == '__main__':
