@@ -14,6 +14,8 @@ from functools import wraps
 import numpy as np
 from scipy.stats import poisson as _poisson
 
+N_PROCS = 3
+
 
 def cache_on_instance(func):
     """caching for single argument methods"""
@@ -119,13 +121,6 @@ class Environment:
                 return_dist=self.distributions.y_return
         )
 
-    # def _calculate_transition_probabilities(self):
-    #     probs = dict()
-    #     for s, ns in product(self.possible_states(), repeat=2):
-    #         for a in self.possible_actions(s):
-    #             probs[(ns, s, a)] = self.transition_probability(ns, s, a)
-    #     return probs
-
     @staticmethod
     def _calculate_single_state(tup):
         instance, state_ = tup
@@ -136,8 +131,6 @@ class Environment:
         return inner_probs
 
     def _calculate_transition_probabilities(self):
-
-        N_PROCS = 3
         with ProcessPoolExecutor(N_PROCS) as executor:
             outputs = executor.map(self._calculate_single_state, [(self, s) for s in self.possible_states()])
 

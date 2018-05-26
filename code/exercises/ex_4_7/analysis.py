@@ -9,16 +9,14 @@ created: 24/05/2018 20:50
 from itertools import product
 import os
 
-import matplotlib;
-
-matplotlib.use('TkAgg')
+import matplotlib; matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
 from exercises.plotting import rc
 from exercises.utils import read_pickle
-from exercises.ex_4_7.jacks_car_rental import folder as output_folder
+from exercises.ex_4_7 import output_folder
 
 if __name__ == "__main__":
     plt.rcParams.update(rc())
@@ -55,7 +53,7 @@ if __name__ == "__main__":
     ax.set_title('$v_*$', fontsize=20)
 
     plt.savefig(
-            os.path.join(output_folder, 'jacks_car_rental.png'),
+            os.path.join(output_folder, 'altered_car_rental.png'),
             bbox_inches='tight'
     )
     # plt.show()

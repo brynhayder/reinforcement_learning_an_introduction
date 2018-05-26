@@ -1,25 +1,4 @@
-\documentclass[a4paper, oneside, 11pt]{article}
-\usepackage[margin=2.5cm]{geometry}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{setspace}
-\usepackage{xcolor}
-\usepackage{upquote}
-\usepackage{dsfont}
-\usepackage[utf8]{inputenc}
-\usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black]{hyperref}
-
-\setlength{\parindent}{0cm}
-\newcommand\Rule{\noindent\makebox[\textwidth]{\rule{\textwidth}{0.5pt}}}
-
-\newcommand\argmax{\operatorname*{argmax}}
-\newcommand\argmin{\operatorname*{argmin}}
-\renewcommand\P{\mathbb{P}}
-\newcommand\Epi{\mathbb{E}_\pi}
-
-\renewcommand{\familydefault}{\sfdefault}
-
+\input{header}
 
 \begin{document}
 
@@ -44,7 +23,7 @@ Reinforcement learning is about how an agent can learn to interact with its envi
      \item[Model] mimics the environment to facilitate planning. Not all reinforcement learning algorithms have a model (if they don't then they can't plan, i.e. must use trial and error, and are called model free).
 \end{description}
 
-
+\clearpage
 \section{Multi-armed Bandits}
 Reinforcement learning involves evaluative feedback rather than instructive feedback. We get told whether our actions are good ones or not, rather than what the single best action to take is. This is a key distinction between reinforcement learning and supervised learning.
 
@@ -117,7 +96,7 @@ We then iteratively perform updates according to
 \end{equation}
 where $\bar{R}_t$ is the mean of previous rewards. The box in the notes shows that this is an instance of stochastic gradient ascent since the expected value of the update is equal to the update when doing gradient ascent on the (total) expected reward.
 
-
+\clearpage
 \section{Finite Markov Decision Processes}
 We say that a system has the \emph{Markov property} if each state includes all information about the previous states and actions that makes a difference to the future.\\
 
@@ -251,7 +230,7 @@ Note that once one identifies an optimal value function $v_*$, then it is simple
 
 Having $q_*$ is even better since we don't need to check $v_*(s')$ in the succeeding states $s'$, we just find $a_* = \argmax_a q_*(s, a)$ when in state $s$.
 
-
+\clearpage
 \section{Dynamic Programming}
 
 The term Dynamic Programming (DP) refers to a collection of algorithms that can be used to compute optimal policies given perfect model of the environment as a Markov Decision Process (MDP). DP methods tend to be computationally expensive and we often don't have a perfect model of the environment, so they aren't used in practice. However, they provide useful theoretical basis for the rest of reinforcement learning. \\
@@ -271,15 +250,93 @@ Consider a sequence of approximate value functions $v_0, v_1, v_2, \dots$ each m
             &= \sum_a \pi(a|a) \sum_{s', r} p(s', r| s, a) \left[r + \gamma v_k(s')\right]
 \end{align}
 
-Clearly, $v_k = v_\pi$ is a fixed point. The sequence $\{v_k\}$ can be shown in general to converge to $v\_pi$ as $k \to \infty$ under the same conditions that guarantee the existence of $v_\pi$. This algorithm is called \emph{iterative policy evaluation}. This update rule is an instance of an \emph{expected update} because it performs the updates by taking an expectation over all possible next states rather than by taking a sample next state.\\
+Clearly, $v_k = v_\pi$ is a fixed point. The sequence $\{v_k\}$ can be shown in general to converge to $v_\pi$ as $k \to \infty$ under the same conditions that guarantee the existence of $v_\pi$. This algorithm is called \emph{iterative policy evaluation}. This update rule is an instance of an \emph{expected update} because it performs the updates by taking an expectation over all possible next states rather than by taking a sample next state.\\
+
+\subsection{Policy Improvement}
+\subsubsection*{Policy Improvement Theorem}
+
+Let $\pi$, $\pi'$ be any pair of deterministic policies, such that
+\begin{equation}
+    q_\pi(s, \pi(s)) \geq v_\pi(s) \quad \forall s \in \mathcal{S}.
+\end{equation}
+That is, $\pi'$ is as least as good as $\pi$. Then we have (shown below)
+\begin{equation}
+    v_{\pi'}(s) \geq v_\pi(s) \quad \forall s \in \mathcal{S}
+\end{equation}
+so $\pi'$ gives at least as good (expected) return as $\pi$.\\
+
+The argument below also shows that if $q_\pi(s, \pi(s)) > v_\pi(s)$ at any $s$, then there is at least one $s$ for which $v_{\pi'}(s) > v_\pi(s)$.
+\subsubsection*{proof:}
+\begin{align*}
+    v_\pi(s) & \leq q_\pi(s, \pi'(s)) \\
+             & = \E{}[R_{t+1} + \gamma v_\pi(S_{t+1}) | S_t=s, A_t=\pi'(s)] \\
+             & = \E{}_{\pi'} [R_{t+1} + \gamma v_\pi(S_{t+1}) | S_t=s] \\
+             & \leq \E{}_{\pi'} [R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots| S_t=s] \\
+             & = v_{\pi'}(s)
+\end{align*}
+
+\subsubsection*{Policy Improvement Algorithm}
+Now consider a policy that is greedy with respect to $q_\pi(s, a)$. Define 
+\begin{align}
+    \pi'(s) &= \argmax_a q_\pi(s, a) \\ 
+            &= \argmax_a \E{} [R_{t+1} + \gamma v_\pi(S_{t+1}) | S_t=s, A_t=a] \\
+            & \argmax_a \sum_{s', r} p(s', r|s, a)[ r + \gamma v_\pi(s')].
+\end{align}
+Now we can use $v_\pi$ to get $\pi' \geq \pi$, then use $v_{\pi'}$ to get \emph{another} policy. (In the above, ties are broken arbitrarily when the policy is deterministic. If the policy is stochastic, we accept any policy that assigns zero probability to sub-optimal actions.)\\
+
+Note that by construction
+\[
+    q_\pi(s, \pi'(s)) \geq v_p\pi(s)
+\]
+therefore
+\[
+    v_{\pi'} \geq v_\pi
+\]
+so we get from this process a monotonically increasing sequence of policies.\\
+
+Note also that is $\pi'$ is as good as $\pi$ then $v_{\pi'} = v_\pi$ and $\forall s \in \mathcal{S}$
+\begin{align*}
+    v_\pi &= \max_a \E{}[R_{t+1} + \gamma v_{\pi'(S_{t+1})}| S_t=s, A_t=a]\\
+          &= \max_a \sum_{s', r} p(s', r|s, a)(r + \gamma v v_{\pi'}(s'))
+\end{align*}
+which is the Bellman optimality condition for $v_*$, so both $\pi$ and $\pi'$ are optimal. This means that policy improvement gives a strictly better policy unless the policy is already optimal. \\
+
+The policy improvement theorem holds for stochastic policies too, but we don't go into that here.
+          
+
+\subsection{Policy Iteration}
+We can exploit policy improvement iteratively to get the policy iteration algorithm.
+
+\includegraphics[width=\textwidth]{data/notes_images/policy_iteration_algorithm.png}
+\mbox{}\\
+A finite MDP has only a finite number of policies (as long as they are deterministic, of course) so this process is guaranteed to converge.
+
+\subsection{Value Iteration}
+Policy iteration can be slow because each iteration involves running the entire policy evaluation until convergence. \\
+
+It turns out that one can truncate the policy evaluation step of policy iteration in many ways without losing convergence guarantees. One special case of this is \emph{value iteration}, where we truncate policy evaluation after only one update of each state. This algorithm converges to $v_*$ under the same conditions that guarantee the existence of $v_*$. 
+
+\includegraphics[width=\textwidth]{data/notes_images/value_iteration_algorithm.png}
+\mbox{}\\
+
+Note the $\max_a$ in the assignment of $V(s)$, since we only one sweep of the state space and then choose the greedy policy.\\
+
+It may be more efficient to interpose multiple policy evaluation steps in between policy improvement iterations, all of these algorithms converge to an optimal policy for discounted finite MDPs. 
+
+\subsection{Asynchronous Dynamic Programming}
+The DP methods that we have described so far all involve a full sweep of the state space on each iteration. This is potentially a very costly procedure. \\
+
+\emph{Asynchronous} DP algorithms update the values in-place and cover states in any order whatsoever. The values of some states may be updated several times before the values of others are updated once. To converge correctly, however, an asynchronous algorithm must continue to update the values of all the states: it can’t ignore any state after some point in the computation.\\
+
+Asynchronous DPs give a great increase in flexibility, meaning that we can choose the updates we want to make (even stochastically) based on the interaction of the agent with the environment. This procedure might not reduce computation time in total if the algorithm is run to convergence, but it could allow for a better rate of progress for the agent.
+
+\subsection{Generalised Policy Iteration}
+We use the term \emph{generalised policy iteration} (GPI) to refer to the general idea of letting policy evaluation and policy improvement processes interact, independent of the granularity and other details of the two processes. Almost all reinforcement learning methods are well described as GPI, including the policy iteration algorithms we have discussed in this section. GPI works via the competing but complementary nature of the two processes. In some cases it can be guaranteed to converge. 
+
+\subsection{Efficiency of Dynamic Programming}
+If we ignore a few technical details, then the (worst case) time DP methods take to find an optimal policy is polynomial in the number of states and actions. Compare this to the searching the states directly, which is exponential.
 
 
-
-
-
-
-
-
-
-
+\clearpage
+\section{Monte Carlo Methods}
 \end{document}
