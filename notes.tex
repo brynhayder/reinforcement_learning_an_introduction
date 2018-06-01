@@ -213,7 +213,7 @@ They also share the same optimal action-value function $q_*(s, a)$
 \end{equation}
 this is the expected return from taking action $a$ in state $s$ and thereafter following the optimal policy.
 \begin{equation}
-    q_*(s, a) = \Epi{} [R_{t+1} + \gamma v_*(S_{t+1}) | S_{t} = s, A_t = a].
+    q_*(s, a) = \E{} [R_{t+1} + \gamma v_*(S_{t+1}) | S_{t} = s, A_t = a].
 \end{equation}\\
 
 Since $v_*$ is a value function, it must satisfy a Bellman equation (since it is simply a consistency condition). However, $v_*$ corresponds to a policy that always selects the maximal action. Hence 
