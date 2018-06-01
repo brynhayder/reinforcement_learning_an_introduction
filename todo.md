@@ -2,8 +2,8 @@
 ---------
 
 ## LaTeX
-- investigate header file for definitions etc.
-- read some latex docs
+- read some latex docs to learn it properly
+- figure out how to typeset algorithms 
 
 ## code
 - docstrings
