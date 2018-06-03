@@ -222,7 +222,7 @@ Since $v_*$ is a value function, it must satisfy a Bellman equation (since it is
 \end{equation}
 Similarly,
 \begin{align}
-    q_*(s, a) &= \mathbb{E} [R_{t+1} + \gamma \max{a'}q_*(S_{t+1}, a') | S_t=s, A_t = a]\\
+    q_*(s, a) &= \mathbb{E} [R_{t+1} + \gamma \max_{a'}q_*(S_{t+1}, a') | S_t=s, A_t = a]\\
               &= \sum_{s', r} p(s', r| s, a ) [r + \gamma \max_{a'}q_*(s', a')].
 \end{align} \\
 
@@ -247,7 +247,7 @@ Consider a sequence of approximate value functions $v_0, v_1, v_2, \dots$ each m
 
 \begin{align}
     v_{k+1} &\doteq \Epi [R_{t+1} + \gamma v_{k}(S_{t+1}) | S_t = s] \\
-            &= \sum_a \pi(a|a) \sum_{s', r} p(s', r| s, a) \left[r + \gamma v_k(s')\right]
+            &= \sum_a \pi(s|a) \sum_{s', r} p(s', r| s, a) \left[r + \gamma v_k(s')\right]
 \end{align}
 
 Clearly, $v_k = v_\pi$ is a fixed point. The sequence $\{v_k\}$ can be shown in general to converge to $v_\pi$ as $k \to \infty$ under the same conditions that guarantee the existence of $v_\pi$. This algorithm is called \emph{iterative policy evaluation}. This update rule is an instance of an \emph{expected update} because it performs the updates by taking an expectation over all possible next states rather than by taking a sample next state.\\
@@ -297,7 +297,7 @@ so we get from this process a monotonically increasing sequence of policies.\\
 Note also that is $\pi'$ is as good as $\pi$ then $v_{\pi'} = v_\pi$ and $\forall s \in \mathcal{S}$
 \begin{align*}
     v_\pi &= \max_a \E{}[R_{t+1} + \gamma v_{\pi'(S_{t+1})}| S_t=s, A_t=a]\\
-          &= \max_a \sum_{s', r} p(s', r|s, a)(r + \gamma v v_{\pi'}(s'))
+          &= \max_a \sum_{s', r} p(s', r|s, a)(r + \gamma v_{\pi'}(s'))
 \end{align*}
 which is the Bellman optimality condition for $v_*$, so both $\pi$ and $\pi'$ are optimal. This means that policy improvement gives a strictly better policy unless the policy is already optimal. \\
 
