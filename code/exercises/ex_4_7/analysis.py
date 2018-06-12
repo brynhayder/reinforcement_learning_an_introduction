@@ -11,10 +11,9 @@ import os
 
 import matplotlib; matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-from exercises.plotting import rc
+from plotting import rc
 from exercises.utils import read_pickle
 from exercises.ex_4_7 import output_folder
 

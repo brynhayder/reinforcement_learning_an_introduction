@@ -13,13 +13,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import constants as c
-from exercises import plotting
-
+import plotting
 
 if __name__ == '__main__':
     samples = pd.read_pickle(
             os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'samples.pkl'
             )
@@ -27,7 +26,7 @@ if __name__ == '__main__':
 
     results = pd.read_pickle(
             os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'results.pkl'
             )
@@ -48,7 +47,7 @@ if __name__ == '__main__':
         # plt.tight_layout()
         fig.savefig(
                 os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'action_values.png'
                 ),
@@ -65,7 +64,7 @@ if __name__ == '__main__':
         # plt.tight_layout()
         fig.savefig(
                 os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'parameter_study.png'
                 ),

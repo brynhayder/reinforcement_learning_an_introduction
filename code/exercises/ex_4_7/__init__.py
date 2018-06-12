@@ -10,4 +10,4 @@ import os
 
 import constants as c
 
-output_folder = os.path.join(c.Paths.exercise_output, 'ex_4_7')
+output_folder = os.path.join(c.Paths.output, 'ex_4_7')

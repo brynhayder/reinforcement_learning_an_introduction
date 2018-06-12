@@ -84,7 +84,7 @@ if __name__ == "__main__":
     import os
 
     import constants as c
-    from exercises import plotting
+    import plotting
 
 
     def plot(values_list, policy, i, p_win, name=None, legend=True):
@@ -120,7 +120,7 @@ if __name__ == "__main__":
             if name is not None:
                 plt.savefig(
                         os.path.join(
-                                c.Paths.exercise_output,
+                                c.Paths.output,
                                 'ex_4_9',
                                 name + '.eps'
                         ),

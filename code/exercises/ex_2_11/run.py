@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     pd.DataFrame(samples).to_pickle(
             os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'samples.pkl'
             )
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     results.to_pickle(
             os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_11',
                     'results.pkl'
             )

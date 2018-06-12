@@ -31,7 +31,7 @@ INITIAL_VALUE = 0.
 def save_frame(frame, filename):
     return frame.to_pickle(
             os.path.join(
-                    c.Paths.exercise_output,
+                    c.Paths.output,
                     'ex_2_5',
                     filename
             )

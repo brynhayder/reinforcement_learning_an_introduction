@@ -13,7 +13,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import constants as c
-from exercises import plotting
+import plotting
+
 
 # Make the charts asked for in the thing
 # also make some charts of how the values converge as the real ones move
@@ -22,7 +23,7 @@ from exercises import plotting
 
 def load_file(name):
     return pd.read_pickle(
-            os.path.join(c.Paths.exercise_output, 'ex_2_5', name),
+            os.path.join(c.Paths.output, 'ex_2_5', name),
     ).rename(columns=int)
 
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         plt.tight_layout()
         fig.savefig(
                 os.path.join(
-                        c.Paths.exercise_output,
+                        c.Paths.output,
                         'ex_2_5',
                         'learning_curve.png'
                 )

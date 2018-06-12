@@ -18,4 +18,5 @@ class Paths(object):
             )
     )
 
-    exercise_output = os.path.join(data, 'exercise_output')
+    output = os.path.join(data, 'exercise_output')
+    input = os.path.join(data, 'exercise_input')
