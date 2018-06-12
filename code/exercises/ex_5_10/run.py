@@ -18,7 +18,7 @@ import numpy as np
 
 import constants as c
 
-from exercises.ex_5_10.model import Brain, Car, RaceTrack, run_epsiode, train
+from exercises.ex_5_10.model import Brain, Car, RaceTrack, run_episode, train
 from exercises.ex_5_10.utils import load_track
 
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     racetrack.set_noise_level(None)
     car.set_policy(brain.greedy_policy())
     for pos in racetrack.start_positions:
-        greedy_episode = run_epsiode(
+        greedy_episode = run_episode(
                 car,
                 racetrack,
                 start_position=pos

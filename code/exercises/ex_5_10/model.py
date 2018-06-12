@@ -10,8 +10,6 @@ This code is not threadsafe, due to the RandomStates being passed around
 
 # I decided to allow the car to have negative velocities so that it can go left if it wants.
 
-# TODO: The printing sucks here. Change it to use some imshow of a matrix or something.
-
 from collections import namedtuple
 import copy
 import itertools
@@ -362,7 +360,7 @@ class EpsilonGreedy:
             return greedy(self.action_values[state])
 
 
-def run_epsiode(car, racetrack, start_position=None, print_=False):
+def run_episode(car, racetrack, start_position=None, print_=False):
     """
 
     Args:
@@ -404,7 +402,7 @@ def train(brain, car, racetrack, runs_per_pos=1):
     r = 0
     for pos in racetrack.start_positions:
         for _ in range(runs_per_pos):
-            e = run_epsiode(car, racetrack, start_position=pos)
+            e = run_episode(car, racetrack, start_position=pos)
             brain.update(e)
             r += sum(e.rewards)
     return r / len(racetrack.start_positions) / runs_per_pos
@@ -449,7 +447,7 @@ if __name__ == "__main__":
     for i in range(N_RUNS):
         behaviour_policy = brain.epsilon_greedy_policy()
         car.set_policy(behaviour_policy)
-        e = run_epsiode(car, racetrack)
+        e = run_episode(car, racetrack)
         brain.update(e)
         episodes.append(e)
         if i % 1000 == 0:
@@ -461,7 +459,7 @@ if __name__ == "__main__":
     print("\n\n")
     racetrack.set_noise_level(None)
     car.set_policy(brain.greedy_policy())
-    greedy_episode = run_epsiode(car, racetrack)
+    greedy_episode = run_episode(car, racetrack)
     print("Greedy Episode")
     print(f"Return: {sum(greedy_episode.rewards)}")
     racetrack.print_episode(greedy_episode)
