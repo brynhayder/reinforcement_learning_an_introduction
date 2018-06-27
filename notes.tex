@@ -339,29 +339,246 @@ If we ignore a few technical details, then the (worst case) time DP methods take
 
 \clearpage
 \section{Monte Carlo Methods}
+Monte Carlo methods learn state and action values by sampling and averaging returns (i.e. not from dynamics like DP). These methods learn from experience (real or simulated) and require no prior knowledge of the environments dynamics.\\
+
+Monte Carlo methods tus require well defined returns, so we will consider them only for episodic tasks. Only on completion of an episode do values and policies change.\\
+
+We still use the generalised policy iteration framework, but we adapt it so that we learn the value function from experience rather than compute it \emph{a priori}.
 
 
 \subsection{Monte Carlo Prediction}
+The idea is to average the returns following each state to get an estimate of the state value
+\[
+    v_\pi(s) = \Epi{} [G_{t+1} | S_t =s].
+\]
+Given enough observations, the sample average converges to the true state value under the policy $\pi$.\\
+
+Given a policy $\pi$ and a set of episodes, here are two ways in which we might estimate state values
+\begin{description}
+    \item[First Visit MC] average returns from first visit to state $s$ in order to estimate $v_\pi(s)$
+    \item[Every Visit MC] average returns following every visit to state $s$.
+\end{description}
+
+First visit MC generates iid estimates of $v_\pi(s)$ with finite variance, so the sequence of estimates converges to the expected value by the law of large numbers as visits to $s$ tend to $\infty$. Every visit MC does not generate independent estimates, but still converges.\\
+
+An algorithm for first visit MS (what we will focus on) is below. Every visit is the same, just without the check for $S_k$ occurring earlier in the episode.
+
 \includegraphics[width=\textwidth]{data/notes_images/first_visit_mc_algo.png}
 
+Monte Carlo methods are often used even when the dynamics of the environment are knowable, e.g. in Blackjack. It is often much easier to create sample games than it is to calculate environment dynamics directly.\\
+
+MC estimates for different states are independent (unlike bootstrapping in DP). This means that we can use MC to calculate the value function for a subset of the states, rather than the whole state space as with DP. Along with the ability to learn from experience and simulation, this is the another advantage that MC has over DP.
 
 \subsection{Monte Carlo Estimation of Action Values}
+If we don't have a model for the environment, then it is more useful to estimate action-values. With a model we can use state values to find a policy by searching possible actions, as with DP (value iteration, etc.). We can't do this without knowledge of the dynamics, so one of the primary goals of MC is to estimate $q_*$. We start with policy evaluation for action-values.
+
+\subsubsection*{Policy Evaluation for Action-Values}
+The policy evaluation problem for action-values is to estimate $q_\pi(s, a)$ for some $\pi$. This is essentially the same as for state values, only we now talk about state-action pairs being visited, i.e. taking action $a$ in state $s$, rather than just states being visited.\\
+
+If $\pi$ is deterministic, then we will only estimate the values of actions that $\pi$ dictates. We therefore need to incorporate some exploration in order to have useful action-values (since, after all, we want to use them to make informed decisions).\\
+
+One consideration is to make $\pi$ stochastic, e.g. $\varepsilon$-soft. Another is the assumption of \emph{exploring starts}, which specifies that ever state-action pair has non-zero probability of being selected as the starting state. Of course, this is not always posible in practice.\\
+
+For now we assume exploring start. Later we will come back to the issue of \emph{maintaining exploration}
 
 \subsection{Monte Carlo Control}
+We make use of the GPI framework for action-values. Policy evaluation is done as described. Policy improvement is done by making the policy greedy with respect to the action-value function, so no model is needed for this step
+\[
+    \pi(s) \doteq \argmax_a q_(s, a).
+\]
+
+We generate a sequence of policies $\pi_k$ each greedy with respect to $q_{\pi_{k-1}}(s, a)$. The policy improvement theorem applies: for all $s \in \mathcal{S}$
+\begin{align}
+    q_{\pi_k}(s, a) &= q_{\pi_k}(s, \argmax_a q_\pi(s, a)) \\
+                    &= \max_a q_{\pi_k}(s, a) \\
+                    \geq q_{\pi_k}(s, \pi_k(s))\\
+                    = v_{\pi_k}(s)
+\end{align}
+
+So $\pi_{k+1}$ uniformly better than $\pi_k$ or it is optimal. \\
+
+The above procedure's convergence depends on assumptions of exploring starts and infinitely many episodes. We will relax the first later, but we will address the second now.\\
+
+Two approaches to avoid infinitely many episodes:
+\begin{enumerate}
+    \item Stop the algorithm once the $q_{\pi_k}$ stop moving within a certain error. (In practice this is only useful on the smallest problems.)
+    \item Stop policy evaluation after a certain number of episodes, moving the action value towards $q_{\pi_k}$, then go to policy improvement.
+\end{enumerate}
+
+For MC policy evaluation, it is natural to alternate policy evaluation and improvement on a episode by episode basis. We give such an algorithm below (with the assumption of exploring starts).
+
 \includegraphics[width=\textwidth]{data/notes_images/mc_policy_iteration_exploring_starts.png}
 
+It is easy to see that optimal policies are a fixed point of this algorithm. Whether this algorithm converges in general is still, however, an open question.
+
 \subsection{Monte Carlo Control without Exploring Starts}
+\subsubsection*{On Policy vs. Off Policy}
+On-policy methods evaluate or improve the policy that is used to make decisions, whereas off-policy methods evaluate or improve one that is different than the one used to generate the data.
+
+\subsubsection*{On-Policy Techniques without Exploring Starts}
+We consider $\varepsilon$-greedy policies that put probability $1 - \varepsilon + \frac{\varepsilon}{|\mathcal{A}(s)|}$ on the maximal action and $\frac{\varepsilon}{|\mathcal{A}(s)|}$ on each of the others. These are examples of $\varepsilon$-soft policies in which $\pi(a|s) \geq \frac{\varepsilon}{|\mathcal{A}(s)|}$.\\
+
+We use this idea in the GPI framework:
 \includegraphics[width=\textwidth]{data/notes_images/on_policy_mc_algo.png}
 
-\subsection{Off-Policy Prediction via Importance Sampling}
+We now show that an $\varepsilon$-greedy policy with respect to $q_\pi$, $\pi'$, is an improvement over any $\varepsilon$-soft policy $\pi$. For any $s \in \mathcal{S}$
+\begin{align}
+    q_\pi(s, \pi'(s)) &= \sum_a \pi'(a|s) q_\pi(s, a) \\ 
+                      &= \frac{\varepsilon}{|\mathcal{A}(s)|} \sum_a q_\pi(s, a) + (1 - \varepsilon)\max_a q_\pi(s, a) \\
+                      &\geq \frac{\varepsilon}{|\mathcal{A}(s)|} \sum_a q_\pi(s, a) + (1 - \varepsilon)\sum_a\frac{\pi(a|s) - \frac{\varepsilon}{|\mathcal{A}(s)|}}{1 - \varepsilon} q_\pi(s, a) \\
+                      &= \sum_a \pi(a|s) q_\pi(s, a)\\
+                      &= v_\pi(s)
+\end{align}
+(where line 3 follows because a weighted average with weights $w_i \geq 0$ and $\sum_i w_i = 1$ is $\leq$ the max term).\\
 
+This satisfies the condition of the policy improvement theorem so we now know that $\pi' \geq \pi$.\\
+
+Previously, with deterministic greedy policies, we would get automatically that fixed points of policy iteration are optimal policies since
+\[
+    v_*(s) \doteq max_\pi v_\pi(s) \quad \forall s \in \mathcal{S}.
+\]
+Now our policies are not deterministically greedy, our value updates do not take this form. We note, however, that we can consider an equivalent problem where we change the environment to select state and reward transitions at random with probability $\varepsilon$ and do what our agent asks with probability $1 - \varepsilon$. We have moved the stochasticity of the policy into the environment, creating an equivalent problem. The optimal value function in the new problem satisfies its Bellman equation
+\begin{align}
+    \tilde{v}_\pi(s) &= (1 - \varepsilon) \max_a \tilde{q}_\pi(s, a) + \frac{\varepsilon}{|\mathcal{A}(s)|}\sum_a \tilde{q}_\pi(s, a) \\ 
+                     &= (1 - \varepsilon) \max_a \sum_{s', r} p(s', r|s, a)[r + \gamma \tilde{v}_\pi(s')] + \frac{\varepsilon}{|\mathcal{A}(s)|} \sum_a \sum_{s', r} p(s', r|s, a)[r + \gamma \tilde{v}_\pi(s')].
+\end{align}
+We also know that at fixed points of our algorithm
+\begin{align}
+    v_\pi(s) &= (1 - \varepsilon) \max_a q_\pi(s, a) + \frac{\varepsilon}{|\mathcal{A}(s)|}\sum_a q_\pi(s, a) \\ 
+                     &= (1 - \varepsilon) \max_a \sum_{s', r} p(s', r|s, a)[r + \gamma v_\pi(s')] + \frac{\varepsilon}{|\mathcal{A}(s)|} \sum_a \sum_{s', r} p(s', r|s, a)[r + \gamma v_\pi(s')].
+\end{align}
+This is the same equation as above, so by uniqueness of solutions to the Bellman equation we have that $v_\pi = \tilde{v}_\pi$ and so $\pi$ is optimal.
+
+\subsection{Off-Policy Prediction via Importance Sampling}
+Off-policy learning uses information gained by sampling the \emph{behaviour policy} $b$ to learn the \emph{target policy} $\pi$. The behaviour policy explores the environment for us during training and we update the target policy accordingly.\\
+
+In this section we consider the prediction problem: estimating $v_\pi$ or $q_\pi$ for a fixed and known $\pi$ using returns from $b$. In order to do this we need the assumption of coverage:
+\begin{equation}
+    \pi(a|s) \geq 0 \implies b(a|s) \geq 0.
+\end{equation}
+This implies that $b$ must be stochastic wherever it is not identical to $\pi$. The target policy $\pi$ may itself be deterministic, e.g. greedy with respect to action-value estimates.
+
+\subsubsection*{Importance Sampling}
+We use \emph{importance sampling} to evaluate expected returns from $\pi$ given returns from $b$.\\
+
+Define the importance sampling ratio as the relative probability of a certain trajectory from $S_t$
+\begin{align}
+    \rho_{t:T-1} &= \frac{\P{}(A_t, S_{t+1}, A_{t+1}, \dots)| S_t, A_{t:T-1} \sim \pi}{\P{}(A_t, S_{t+1}, A_{t+1}, \dots)| S_t, A_{t:T-1} \sim b} \\
+                 &= \frac{\prod_{k=t}^{T-1}\pi(A_k|S_k)\P{}(S_{k+1}|S_k, A_k)}{\prod_{k=t}^{T-1}b(A_k|S_k)\P{}(S_{k+1}|S_k, A_k)}\\
+                 &=\prod_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k)}
+\end{align}
+where the state transition dynamics $\P{}$ cancel out.\\
+
+If we have returns $G_t$ from evaluating policy $b$, so $v_b(s) = \E[G_t|S_t=s]$, then we can calculate
+\[
+    v_\pi(s) = \E[\rho_{t:T-1}G_t|S_t=s]
+\]
+
+\subsubsection*{Estimation}
+Introduce new notation:
+\begin{itemize}
+    \item Label all time steps in a single scheme. So maybe episode 1 is $t=1, \dots, 100$ and episode 2 is $t = 101, \dots, 200$, etc.
+    \item Denote the set times of first/every visit to $s$ by $\mathcal{T}(s)$ (spanning episodes).
+    \item Let $T(t)$ be the first termination after $t$
+    \item Let $G_t$ be the returns from $t$ to $T(t)$
+\end{itemize}
+
+We can now give two methods of values for $\pi$ from returns from $b$:
+{\bfseries{Ordinary Importance Sampling}}
+\begin{equation}
+    V(s) \doteq \frac{\sum_{t\in \mathcal{T}(s)} \rho_{t:T-1}G_t}{|\mathcal{T}(s)|}
+\end{equation}
+{\bfseries{Weighted Importance Sampling}}
+\begin{equation}
+    V(s) \doteq \frac{\sum_{t\in \mathcal{T}(s)} \rho_{t:T-1}G_t}{\sum_{t\in \mathcal{T}(s)} \rho_{t:T-1}}
+\end{equation}
+or 0 if the denominator is 0.\\
+
+Weighted importance sampling is biased (e.g. it's expectation is $v_b(s)$ after 1 episode) but has bounded variance. The ordinary importance sampling ratio is unbiased, but has possibly infinite variance, because the variance of the importance sampling ratios themselves is unbounded.\\
+
+Assuming bounded returns, the variance of the weighted importance sampling estimator converges to 0 even if the variance of the importance sampling ratios is infinite. In practice, this estimator usually has dramatically lower variance and is strongly preferred.
 
 \subsection{Incremental Implementation}
+We look for incremental calculations of the averages that make up the estimates, as in Chapter 2.\\
+
+For on-policy methods the incremental averaging is the same as in Chapter 2. For off-policy methods, but with ordinary importance sampling, we only need to multiply the returns by the importance sampling ratio and then we can average as before.\\
+
+We will now consider weighted importance sampling. We have a sequence of returns $G_i$, all starting in the same state $s$ and each with a random weight $W_i$ (e.g. $W_i = \rho_{i:T(i)-1}$). We want to iteratively calculate (for $n \geq 2$)
+\[
+    V_n = \frac{\sum_{k=1}^{n-1}W_kG_k}{\sum_{k=1}^{n-1}W_k}.
+\]
+We can do this with the following update rules
+\begin{align}
+    V_{n+1} &= V_n + \frac{W_n}{C_n}[G_n - V_n]\\
+    C_{n+1} &= C_n + W_{n+1}
+\end{align}
+where $C_0 = 0$ and $V_1$ is arbitrary (notice that it cancels out as $V_2 = G_1$).\\
+
+Below is an algorithm for off-policy weighted importance sampling (set $b=\pi$ for on policy). The estimator $Q$ converges to $q_\pi$ for all encountered state-action pairs.
+
 \includegraphics[width=\textwidth]{data/notes_images/off_policy_mc_prediction_algo.png}
 
 
 \subsection{Off-Policy Monte Carlo Control}
+Below is an algorithm for estimating $\pi_*$ and $q_*$ in the GPI framework. The target policy $\pi$ is the greedy policy with respect to $Q$, which is an estimate of $q_\pi$. This algorithm converges to $q_\pi$ as long as an infinite number of returns are observed for each state-action pair. This can be achieved by making $b$ $\varepsilon$-soft. The policy $\pi$ converges to $\pi_*$ at all encountered states even if $b$ changes (to another $\varepsilon$-soft policy) between or within episodes.
+
 \includegraphics[width=\textwidth]{data/notes_images/off_policy_mc_control_algo.png}
 
+Notice that this policy only learns from episodes in which $b$ selects only greedy actions after some timestep. This can greatly slow learning.
 
+\subsection{*Discounting Aware Importance Sampling}
+We present a method of importance sampling that recognises the return as a discounted sum of rewards. This can help in estimation, since if an episode is of length 100 and $\gamma = 0$ then the final 99 terms of the importance sampling ration contribute nothing to the expected value of our estimator (they have expected value of 1) but can greatly increase its variance. We therefore construct a method of importance sampling that takes into account discounting.\\
+
+Introduce the \emph{flat partial returns}
+\[
+    \bar{G}_{t:h} \doteq \sum_{i=t+1}^h R_{i} \quad 0 \leq t \leq h \leq T
+\]
+then it can be shown (by rearranging) that
+\begin{align}
+    G_t &\doteq \gamma^{i-t}R_{i+1}\\
+        &= (1 - \gamma)\sum_{h=t+1}^{T-1}\gamma^{h-t-1}\bar{G}_{t:h} + \gamma^{T-t-1}\bar{G}_{t:T}.
+\end{align}
+Now we can scale each flat partial return by a truncated importance sampling ratio (hence reducing variance).\\
+
+{\bfseries{Ordinary Importance Sampling Ratio}}
+\begin{equation}
+    V(s) \doteq \frac{\sum_{t\in \mathcal{T}(s)} \left[ (1 - \gamma) \sum_{h=t+1}^{T(t-1)} \gamma^{h - t - 1}\rho_{t:h-1}\bar{G}_{t:h} + \gamma^{T(t) - t - 1}\rho_{t:T(t) - 1} \bar{G}_{t:T(t)} \right]}{|\mathcal{T}(s)|}
+\end{equation}
+
+{\bfseries{Weighted Importance Sampling Ratio}}
+\begin{equation}
+    V(s) \doteq \frac{\sum_{t\in \mathcal{T}(s)} \left[ (1 - \gamma) \sum_{h=t+1}^{T(t-1)} \gamma^{h - t - 1}\rho_{t:h-1}\bar{G}_{t:h} + \gamma^{T(t) - t - 1}\rho_{t:T(t) - 1} \bar{G}_{t:T(t)} \right]}{\sum_{t\in \mathcal{T}(s)} \left[ (1 - \gamma) \sum_{h=t+1}^{T(t-1)} \gamma^{h - t - 1}\rho_{t:h-1} + \gamma^{T(t) - t - 1}\rho_{t:T(t) - 1} \right]}
+\end{equation}
+
+\subsection{*Per-Decision Importance Sampling}
+There is another way in which we may be able to reduce variance in off-policy importance sapling, even in the absence of discounting ($\gamma = 1$). Notice that the off-policy estimators are made up of terms like
+\[
+    \rho_{t:T-1}G_t = \rho_{t:T-1} (R_{t+1} + \gamma R_{t+2} + \dots+ \gamma^{T-t-1}R_{T})
+\]
+and that each of these terms is of the form
+\[
+    \rho_{t:T-1}R_{t+1} = \frac{\pi(A_t|S_t)}{b(A_t|S_t)}\dots\frac{\pi(A_{T-1}|S_{T-1})}{b(A_{T-1}|S_{T-1})}R_{t+1}.
+\]
+Now notice that only the first and last terms here are correlated, while all the others have expected value 1 (taken with respect to $b$). Clearly this is also the case at each $t$. This means that
+\[
+    \E{}[\rho_{t:T-1}R_{t+k}] = \E{}[\rho_{t:t+k-1}R_{t+k}]
+\]
+therefore
+\[
+    \E{}[\rho{t:T-1}G_t] = \E{}[\tilde{G}_t]
+\]
+where
+\[
+    \tilde{G}_t \doteq \sum_{i=t}^{T-1}\gamma^{i-t}\rho_{t:i}R_{i+1}.
+\]
+Now we can write the ordinary importance sampling estimator as
+\[
+    V(s) \doteq \frac{\sum_{t\in\mathcal{T}(s)} \tilde{G}_t}{|\mathcal{T}(s)|}
+\]
+possibly reducing variance in the estimator. \\
+
+The weighted importance sampling estimators of this form that have so far been found have been shown to not be consistent (in the statistical sense). We don't know if a consistent weighted average form of this exists.
+
+\clearpage
+\section{Temporal-Difference Learning}
 \end{document}

@@ -720,15 +720,209 @@ $\pi$ is greedy, so
 
 \subsection{Exercise 5.10 (programming): Racetrack}
 \subsubsection{Q}
-Consider driving a race car around a turn like those shown in Figure 5.5. You want to go as fast as possible, but not so fast as to run off the track. In our simplified racetrack, the car is at one of a discrete set of grid positions, the cells in the diagram. The velocity is also discrete, a number of grid cells moved horizontally and vertically per time step. The actions are increments to the velocity components. Each may be changed by +1, −1, or 0 in each step, for a total of nine (3 × 3) actions. Both velocity components are restricted to be nonnegative and less than 5, and they cannot both be zero except at the starting line. Each episode begins in one of the randomly selected start states with both velocity components zero and ends when the car crosses the finish line. The rewards are −1 for each step until the car crosses the finish line. If the car hits the track boundary, it is moved back to a random position on the starting line, both velocity components are reduced to zero, and the episode continues. Before updating the car’s location at each time step, check to see if the projected path of the car intersects the track boundary. If it intersects the finish line, the episode ends; if it intersects anywhere else, the car is considered to have hit the track boundary and is sent back to the starting line. To make the task more challenging, with probability 0.1 at each time step the velocity increments are both zero, independently of the intended increments. Apply a Monte Carlo control method to this task to compute the optimal policy from each starting state. Exhibit several trajectories following the optimal policy (but turn the noise off for these trajectories).
+Consider driving a race car around a turn like those shown in Figure 5.5. You want to go as fast as possible, but not so fast as to run off the track. In our simplified racetrack, the car is at one of a discrete set of grid positions, the cells in the diagram. The velocity is also discrete, a number of grid cells moved horizontally and vertically per time step. The actions are increments to the velocity components. Each may be changed by +1, -1, or 0 in each step, for a total of nine ($3 \times 3$) actions. Both velocity components are restricted to be nonnegative and less than 5, and they cannot both be zero except at the starting line. Each episode begins in one of the randomly selected start states with both velocity components zero and ends when the car crosses the finish line. The rewards are -1 for each step until the car crosses the finish line. If the car hits the track boundary, it is moved back to a random position on the starting line, both velocity components are reduced to zero, and the episode continues. Before updating the car’s location at each time step, check to see if the projected path of the car intersects the track boundary. If it intersects the finish line, the episode ends; if it intersects anywhere else, the car is considered to have hit the track boundary and is sent back to the starting line. To make the task more challenging, with probability 0.1 at each time step the velocity increments are both zero, independently of the intended increments. Apply a Monte Carlo control method to this task to compute the optimal policy from each starting state. Exhibit several trajectories following the optimal policy (but turn the noise off for these trajectories).
 \subsubsection{A}
 \ProgrammingExercise\\
 \includegraphics[width=\textwidth]{data/exercise_output/ex_5_10/track_1_trajectories.eps}
 
 \includegraphics[width=\textwidth]{data/exercise_output/ex_5_10/track_2_sample_trajectory.eps}
-\end{document}
 
+\subsection{*Exercise 5.11}
+\subsubsection{Q}
+Modify the algorithm for off-policy Monte Carlo control (page 110) to use the idea of the truncated weighted-average estimator (5.10). Note that you will first need to convert this equation to action values.
+
+\subsubsection{A}
+... 
 
 \clearpage
 \section{Temporal-Difference Learning}
 
+\subsection{Exercise 6.1}
+\subsubsection{Q}
+If $V$ changes during the episode, then (6.6) only holds approximately; what would the difference be between the two sides? Let $V_t$ denote the array of state values used at time $t$ in the TD error (6.5) and in the TD update (6.2). Redo the derivation above to determine the additional amount that must be added to the sum of TD errors in order to equal the Monte Carlo error.
+\subsubsection{A}
+Write
+\[
+    \delta_t \doteq R_{t+1}+ \gamma V_t(S_{t+1}) - V_t(S_t),
+\]
+then
+\begin{align}
+    G_t - V_T(S_t) &= R_{t+1} + \gamma G_{t+1} - V_t(S_t) \\
+                   &= R_{t+1} + \gamma (G_{t+1} - V_T(S_{t+1})) + \gamma (V_T(S_{t+1}) - V_t(S_{t+1})) - (V_t(S_k) - V_k(S_k)) \\
+                   &= R_{t+1} + \gamma (G_{t+1} - V_T(S_{t+1})) + \gamma\varepsilon^t_T - \varepsilon_t^t \\
+                   &= \sum_{k=t}^{T-1} \gamma^{k-t} \delta_k + \sum_{k=t}^{T-1} \gamma^{k-t} [\gamma \varepsilon_{k+1}^t - \varepsilon_k^t],
+\end{align}
+where 
+\[
+    \varepsilon_k^t \doteq V_T(S_k) - V_t(S_k).
+\]
+                   
+\subsection{Exercise 6.2}
+\subsubsection{Q}
+This is an exercise to help develop your intuition about why TD methods are often more efficient than Monte Carlo methods. Consider the driving home example and how it is addressed by TD and Monte Carlo methods. Can you imagine a scenario in which a TD update would be better on average than a Monte Carlo update? Give an example scenario—a description of past experience and a current state—in which you would expect the TD update to be better. Here’s a hint: Suppose you have lots of experience driving home from work. Then you move to a new building and a new parking lot (but you still enter the highway at the same place). Now you are starting to learn predictions for the new building. Can you see why TD updates are likely to be much better, at least initially, in this case? Might the same sort of thing happen in the original task?
+\subsubsection{A}
+TD updates incorporate prior information. Suppose we had a good value estimate for a trajectory $\tau = S_1, S_2, \dots, S_T$, then if we try to estimate the trajectory $\tau = S_0, S_1, S_2, \dots, S_T$ using MC then we need to see multiple episodes of this to get a good estimate of $V(S_0)$, not leveraging the info we already have on $\tau$. TD would use info on $\tau$ to back up the value of $S_0$ and hence converge much quicker. The key differences here are bootstrapping and online learning.
+
+\subsection{Exercise 6.3}
+\subsubsection{Q}
+From the results shown in the left graph of the random walk example it appears that the first episode results in a change in only $V(A)$. What does this tell you about what happened on the first episode? Why was only the estimate for this one state changed? By exactly how much was it changed?
+
+\subsubsection{A}
+All states apart from the terminal states were initialised to the same value (the terminal states must be initialised to 0) and the reward for non-terminal transitions is 0, so the TD(0) updates do nothing on the first pass to states that cannot lead directly to termination. \\
+
+In the first run, the agent terminated on the left.
+\begin{align}
+    V_1(A) &= V_0(A) + \alpha[ 0 + \gamma \times 0 + V_0(A)]\\
+           &= (1-\alpha) V_0(A) \\
+           &= 0.9 \times 0.5 \\
+           &= \frac{9}{20}.
+\end{align}    
+The value of the estimate for $A$ reduced by $\alpha V_0(A) = 0.05$.
+
+\subsection{Exercise 6.4}
+\subsubsection{Q}
+The specific results shown in the right graph of the random walk example are dependent on the value of the step-size parameter, $\alpha$. Do you think the conclusions about which algorithm is better would be affected if a wider range of $\alpha$ values were used? Is there a different, fixed value of $\alpha$ at which either algorithm would have performed significantly better than shown? Why or why not?
+\subsubsection{A}
+
+\begin{itemize}
+    \item General arguments given earlier about the benefits of TD are independent of $\alpha$
+    \item Increases in $\alpha$ make the curve more 
+    \item Decreases in $\alpha$ make the curve more smooth but make it converge slower.
+    \item We see enough of a range here to decide between the two methods
+\end{itemize}
+
+\subsection{*Exercise 6.5}
+\subsubsection{Q}
+In the right graph of the random walk example, the RMS error of the TD method seems to go down and then up again, particularly at high $\alpha$s. What could have caused this? Do you think this always occurs, or might it be a function of how the approximate value function was initialized?
+\subsubsection{A}
+The state C happens to have een initialised to its true value. As training starts, updates occur on outer states (making them more accurate individually) which makes the error across all states reduce. This happens until the residual inaccuracies in the outer states propagate to C. The higher values of $\alpha$ make this effect more pronounced, because the value estimate for C changes more readily in these cases.
+
+\subsection{Exercise 6.6}
+\subsubsection{Q}
+In Example 6.2 we stated that the true values for the random walk example are $\frac16$, $\frac26$, $\frac36$, $\frac46$, and $\frac56$ for states A through E. Describe at least two different ways that these could have been computed. Which would you guess we actually used? Why?
+\subsubsection{A}
+Could have used DP, but probably did the following calculation.\\
+
+First note that
+\[
+    V(s) = \E{}[\mathds{1}\{\textsf{terminate on right from } S\}] = \P{}(\textsf{terminate on right from } S).
+\]
+Also recognise that symmetry now implies $V(C) = 0.5$. Now
+\begin{align*}
+    V(E) &= \frac12 \times 1 + \frac12 \times V(D) \\
+         &= \frac12 + \frac14[V(C) + V(E)],
+\end{align*}
+so $V(E) = \frac56$. We then get $V(D) = \frac46$ and we can calculate the other states in the same way.
+
+\subsection{*Exercise 6.7}
+\subsubsection{Q}
+Design an off-policy version of the $TD(0)$ update that can be used with arbitrary target policy $\pi$ and covering behavior policy $b$, using at each step $t$ the importance sampling ratio $\rho_{t:t}$(5.3).
+\subsubsection{A}
+Let $G_t$ be returns from an episode generated by $b$. Then
+\begin{align*}
+    v_\pi(s) &= \E{}[\rho_{t:T-1}G_t | S_t=s]\\
+             &= \E{}[\rho_{t:T-1} R_{t+1} + \gamma \rho_{t:T-1}G_{t+1} | S_t=s] \\
+             &= \rho_{t:t} \E{}[R_{t+1}|S_t=s] + \gamma \rho_{t:t}\E{}[\rho_{t+1:T-1}G_{t+1} |S_t=s] \\
+             &= \rho_{t:t} \left( \E{}[R_{t+1} | S_t=s] + \E{}[\rho_{t+1:T-1}G_t| S_t = s] \right)\\
+             &= \rho_{t:t} \left( r(s, A_t) + v_\pi(S_{t+1})\right).
+\end{align*}
+So the update for off-policy TD(0) (by sampling approximation) is 
+\begin{equation}
+    V(S_t) \leftarrow V(S_t) + \alpha \left[ \rho_{t:t} R_{t+1} + \rho_{t:t} \gamma V(S_{t+1}) - V(S_t) \right].
+\end{equation}
+
+\subsection{Exercise 6.8}
+\subsubsection{Q}
+Show that an action-value version of (6.6) holds for the action-value form of the TD error $\delta_t = R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)$, again assuming that the values don’t change from step to step.
+\subsubsection{A}
+Write $\delta_t \doteq R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -  Q(S_t, A_t)$. Then the Monte-Carlo error is
+\begin{align*}
+    G_t - Q(S_t, A_t) &= R_{t+1} + \gamma G_{t+1} - Q(S_t, A_t) \\
+                      &= \delta_t - \gamma [Q(S_{t+1}, A_{t+1}) + G_{t+1}]\\
+                      &= \sum_{k=t}^{T-1}\gamma^{k-t}\delta_k
+\end{align*}
+
+\subsection{Exercise 6.9 (programming): Windy Grid World with King's Moves}
+\subsubsection{Q}
+Re-solve the windy gridworld assuming eight possible actions, including the diagonal moves, rather than the usual four. How much better can you do with the extra actions? Can you do even better by including a ninth action that causes no movement at all other than that caused by the wind?
+
+\subsubsection{A}
+\ProgrammingExercise\\
+
+Optimal trajectory is now 7 steps, rather than 15. Including the do-nothing action is not helpful in this example because the wind blows vertically and the goal position is not vertically separated from the start position. It could be useful in other wind environments though.\\
+
+Below are the optimal trajectories for the book example (no diagonal moves) and for the exercise (king's moves). The numbers represent the wind strength in that position.\\
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_6_9/optimal_no_diagonal_moves.png}
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_6_9/optimal_with_diagonal_moves.png}
+
+
+
+\subsection{Exercise 6.10 (programming): Stochastic Wind}
+\subsubsection{Q}
+Re-solve the windy gridworld task with King’s moves, assuming that the effect of the wind, if there is any, is stochastic, sometimes varying by 1 from the mean values given for each column. That is, a third of the time you move exactly according to these values, as in the previous exercise, but also a third of the time you move one cell above that, and another third of the time you move one cell below that. For example, if you are one cell to the right of the goal and you move left, then one-third of the time you move one cell above the goal, one-third of the time you move two cells above the goal, and one-third of the time you move to the goal.
+
+\subsubsection{A}
+\ProgrammingExercise\\
+
+Greedy trajectory and learning curve shown below. Note that although the gradient of the learning curve becomes constant (so the algorithm converges), the greedy episode shown suffers from stochasticity in the wind.
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_6_10/optimal.png}
+
+\includegraphics[width=\textwidth]{data/exercise_output/ex_6_10/learning_curve.eps}
+
+\subsection{Exercise 6.11}
+\subsubsection{Q}
+Why is Q-learning considered an \emph{off-policy} control method?
+
+\subsubsection{A}
+The returns are sampled as if the agent followed the greedy policy with respect to $Q$.
+
+\subsection{Exercise 6.12}
+\subsubsection{Q}
+Suppose action selection is greedy. Is Q-learning then exactly the same algorithm as Sarsa? Will they make exactly the same action selections and weight updates?
+\subsubsection{A}
+Yes (?)
+
+\subsection{Exercise 6.13}
+\subsubsection{Q}
+What are the update equations for Double Expected Sarsa with an $\varepsilon$-greedy target policy?
+\subsubsection{A}
+Expected SARSA has the update 
+\[
+    Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \left[ R_{t+1} + \gamma \E{}[Q(S_{t+1}) | S_{t+1}] - Q(S_t, A_t)\right]
+\]
+
+The update for $S_t, A_t$ is 
+\[
+    R_{t+1} + \gamma \sum_a \pi(a|S_{t+1}) Q(S_{t+1}, a) - Q(S_t, A_t).
+\]
+Double expected SARSA would be keeping two $Q$ arrays and updating one of them each timestep, chosen with equal probability.\\
+
+For an $\varepsilon$-greedy policy we would increment $Q_1(S_t, A_t)$ by
+\begin{equation}
+    \alpha \left[ R_{t+1} + \gamma \left( \frac{\varepsilon}{|\mathcal{A}(a)|} \sum_a Q_2(S_{t+1}, a) + (1-\varepsilon)\max_a\{Q_2(S_{t+1}, a)\} \right) - Q_1(S_t, A_t)  \right]
+\end{equation}
+and the same with 1 and 2 reversed.
+
+
+\subsection{Exercise 6.14}
+\subsubsection{Q}
+Describe how the task of Jack’s Car Rental (Example 4.2) could be reformulated in terms of afterstates. Why, in terms of this specific task, would such a reformulation be likely to speed convergence?
+
+\subsubsection{A}
+One might have coded this up initially with the states as the number of cars in each garage each evening. The agent then takes some action (moves some cars) and we transition stochastically to some state.\\
+
+An alternative would be to introduce the number of cars in the morning (after the agent has moved cars) as an afterstate. This is because the agent is able to deterministically change the environment from evening to next morning (before rentals or returns).\\
+
+In this case we would speed convergence by reducing the number of action-values to be calculated. For instance, we can now evaluate $(10, 0)$ moving one car and $(9, 1)$ moving no cars as the same afterstate $(9, 1)$.
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

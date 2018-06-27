@@ -28,7 +28,7 @@ class StochasticWindyGridWorld(WindyGridWorld):
         self.random_state = random_state or np.random.RandomState(seed=0)
 
     def get_wind(self, position):
-        return super().get_wind(position) + self.random_state.binomial(2, 1/3) - 1
+        return super().get_wind(position) + self.random_state.choice(np.arange(3)) - 1
 
 
 def plot_learning_curve(episodes, ax, **kwargs):
@@ -55,7 +55,7 @@ def learning_curve_chart(episodes):
 
 
 if __name__ == "__main__":
-    n_episodes = 500
+    n_episodes = 5000
     alphas = np.linspace(0.5, 0., n_episodes)
     gamma = 1.
 
