@@ -1,0 +1,11 @@
+\section{Introduction}
+Reinforcement learning is about how an agent can learn to interact with its environment. Reinforcement learning uses the formal framework of Markov decision processes to define the interaction between a learning agent and its environment in terms of states, actions, and rewards.
+
+\setcounter{subsection}{2}
+\subsection{Elements of Reinforcement Learning}
+\begin{description}
+     \item[Policy] defines the way that an agent acts, it is a mapping from perceived states of the world to actions. It may be stochastic.
+     \item[Reward] defines the goal of the problem. A number given to the agent as a (possibly stochastic) function of the state of the environment and the action taken.
+     \item[Value function] specifies what is good in the long run, essentially to maximise the expected reward. The central role of value estimation is arguably the most important thing that has been learned about reinforcement learning over the last six decades.
+     \item[Model] mimics the environment to facilitate planning. Not all reinforcement learning algorithms have a model (if they don't then they can't plan, i.e. must use trial and error, and are called model free).
+\end{description}
