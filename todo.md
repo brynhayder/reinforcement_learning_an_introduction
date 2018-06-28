@@ -6,6 +6,7 @@
 - figure out how to typeset algorithms 
 
 
+
 ## code
 - docstrings
 - tests for bandit problems code

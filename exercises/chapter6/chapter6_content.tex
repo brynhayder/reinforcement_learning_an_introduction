@@ -6,19 +6,16 @@ If $V$ changes during the episode, then (6.6) only holds approximately; what wou
 \subsubsection{A}
 Write
 \[
-    \delta_t \doteq R_{t+1}+ \gamma V_t(S_{t+1}) - V_t(S_t),
+    \delta_t \doteq R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t),
 \]
 then
 \begin{align}
-    G_t - V_T(S_t) &= R_{t+1} + \gamma G_{t+1} - V_t(S_t) \\
-                   &= R_{t+1} + \gamma (G_{t+1} - V_T(S_{t+1})) + \gamma (V_T(S_{t+1}) - V_t(S_{t+1})) - (V_t(S_k) - V_k(S_k)) \\
-                   &= R_{t+1} + \gamma (G_{t+1} - V_T(S_{t+1})) + \gamma\varepsilon^t_T - \varepsilon_t^t \\
-                   &= \sum_{k=t}^{T-1} \gamma^{k-t} \delta_k + \sum_{k=t}^{T-1} \gamma^{k-t} [\gamma \varepsilon_{k+1}^t - \varepsilon_k^t],
+    G_t - V_t(S_t) &= R_{t+1} + \gamma G_{t+1} - V_t(S_t) \\
+                   &= \delta_t + \gamma [ G_{t+1} - V_{t+1}(S_{t+1})] + \gamma [V_{t+1}(S_{t+1}) - V_t(S_{t+1})]\\
+                   &= \delta_t + \gamma [ G_{t+1} - V_{t+1}(S_{t+1})] + \alpha \gamma [R_{t+2} + \gamma V_t(S_{t+2}) - V_t(S_{t+1})]\\
+                   &\vdotswithin{=} \notag\\
+                   &= \sum_{k=t}^{T-1} \gamma^{k-t} \delta_k + \alpha \sum_{k=t}^{T-2} \gamma^{k-t+1} [R_{k+2} + \gamma V_k(S_{k+2}) - V_k(S_{k+1})].
 \end{align}
-where 
-\[
-    \varepsilon_k^t \doteq V_T(S_k) - V_t(S_k).
-\]
                    
 \subsection{Exercise 6.2}
 \subsubsection{Q}

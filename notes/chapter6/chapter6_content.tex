@@ -1,4 +1,103 @@
 \section{Temporal-Difference Learning}
+We first focus on the prediction problem, that is, finding $v\_pi$ given a $\pi$. The control problem, finding $\pi_*$, is approached using the GPI framework.
 
+\subsection{TD Prediction}
 
+\subsubsection*{Connection between TD, MC \& DP}
+Monte-Carlo methods wait until the end of an episode to update the values. A simple MC update suitable for non-stationary environments is
+\begin{equation}
+    V(S_t) \leftarrow V(S_t) + \alpha [G_t - V(S_t)]
+\end{equation}
+we will call this \emph{constant-$\alpha$ MC}. Temporal difference learning (TD) increments the values at each timestep. The following is the TD(0) (or one-step TD) update which is made at $t+1$ (we will see TD($\lambda$) in Chapter 12)
+\begin{equation}
+    V(S_t) \leftarrow V(S_t) + \alpha [R_{t+1} + \gamma V(S_{t+1}) - V(S_t)].
+\end{equation}
+The key difference is that MC uses $G_t$ as the target whereas TD(0) uses $R_{t+1} + \gamma V(S_{t+1})$. TD uses an estimate in forming the target, hence is known as a \emph{bootstrapping method}. Below is TD(0) in procedural form.
+
+\includegraphics[width=\textwidth]{\NotesImages/TD0_prediction.png}
+
+The core of the similarity between MC and TD is down to the following relationship
+\begin{align}
+    v_\pi(s) &\doteq \Epi{}[G_t|S_t = s]\\
+             &= \Epi{}[R_{t+1} + \gamma G_{t+1}|S_t = s]\\
+             &= \Epi{}[R_{t+1} + \gamma V(S_{t+1})|S_t = s]
+\end{align}
+
+\begin{itemize}
+    \item MC uses an estimate of the first line, since it uses sample returns to approximate the expectation
+    \item DP uses an estimate of the final line, because it approximates $v_\pi$ by $V$
+    \item TD does both, it samples the returns like MC and also uses the current value estimates in the target
+\end{itemize}
+
+\subsubsection*{TD Error}
+We can think of the TD(0) update as an error, measuring the difference between the estimated value for $S_t$ and the better estimate of $R_{t+1} + \gamma V(S_{t+1})$. We define the \emph{TD error}
+\begin{equation}
+    \delta_t \doteq R_{t+1} + \gamma V(S_{t+1}) - V(S_t),
+\end{equation}
+now if the array $V$ does not change within the episode we can show (by simple recursion) that the MC error can be written
+\begin{equation}
+    G_t - V(S_t) = \sum_{k=t}^{T-1} \gamma_{k-t}\delta_k.
+\end{equation}
+
+\subsection{Advantages of TD Prediction Methods}
+\begin{itemize}
+    \item TD methods do not require a model of the environment
+    \item TD methods are implements online, which can speed convergence vs. MC methods which must wait until the end of (potentially very long) episodes before learning. TD methods can be applied to continuing tasks for the same reason
+    \item TD methods learn from all actions, whereas MC methods required that the tails of the episodes be greedy
+    \item For any fixed policy $\pi$, TD(0) has been proved to converge to $v_\pi$, in the mean with probability 1 if the step-size parameter decreases according to the usual stochastic approximation conditions
+    \item It is an open question as to whether TD methods converge faster than constant-$\alpha$ MC methods in general, though this seems to be the case in practice
+\end{itemize}
+
+\subsection{Optimality of TD(0)}
+Given a finite number of training steps or episodes, a common method for estimating $V$ is to present the experience repeatedly until $V$ converges. We call the following \emph{batch updating}: given finite experience following a policy and an approximate value function $V$, calculate the increments for each $t$ that is non-terminal and change $V$ once by the sum of all the increments. Repeat until $V$ converges.\\
+
+Under batch updating, we can make some comments on the strengths of TD(0) relative to MC. In an online setting we can do no better than to guess that online TD is faster than constant-$\alpha$ MC because it is similar towards the batch updating solution.
+
+\begin{itemize}
+    \item Under batch updating, MC methods always find estimates that minimize the mean-squared error on the training set.
+    \item Under batch updating, TD methods always finds the estimate that would be exactly correct for the maximum-likelihood model of the Markov process. The MLE model is the one in which the estimates for the transition probabilities are the fraction of observed occurrences of each transition.
+    \item We call the value function calculated from the MLE model the \emph{certainty-equivalence estimate} because it is equivalent to assuming that the estimate of the underlying process is exact. In general, batch TD(0) converges to the certainty equivalence estimate.
+\end{itemize}
     
+\subsection{Sarsa: On-policy TD Control}
+We now use TD methods to attack the control problem.  The \emph{Sara} update is as follows
+\begin{equation}
+    Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)].
+\end{equation}
+This update is done after every transition from a non-terminal state $S_t$. If $S_{t+1}$ is terminal then we set $Q(S_{t+1}, A_{t+1}) = 0$. Note that this rule uses the following elements $(S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1})$ which gives rise to the name Sarsa. The theoroms regarding convergene of the state-value versions of this update apply here too. \\
+
+We write an on-policy control algorithm using Sarsa in the box below, at each time step we move the policy towards the greedy policy with respect to the current action-value function. Sarsa converges with probability 1 to an optimal policy and action-value function as long as all state action pairs are visited infinitely often and the policy also converges to the greedy policy in the limit (e.g. maybe $\pi$ is $\varepsilon$-greedy with $\varepsilon=\frac1t$).
+
+\includegraphics[width=\textwidth]{\NotesImages/sarsa_on_policy_control.png}
+
+\subsection{Q-learning: Off-policy TD Control}
+The \emph{Q-learning} update is 
+\begin{equation}
+    Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \max_a Q(S_{t+1}, a) - Q(S_t, A_t)].
+\end{equation}
+The learning function $Q$ directly approximates $q_*$. All that is required for convergence is that all pairs continue to be updated. An algorithm for Q-learning is given in the box below.
+
+\includegraphics[width=\textwidth]{\NotesImages/q_learning.png}
+
+\subsection{Expected Sarsa}
+The update rule for \emph{Expected Sarsa} is 
+\begin{align}
+        Q(S_t, A_t) & \leftarrow Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \E{}[Q(S_{t+1}, A_{t+1})|S_{t+1}] - Q(S_t, A_t)] \\
+                    & \leftarrow Q(S_t, A_t) + \alpha [R_{t+1} + \gamma \sum_a \pi(a|S_{t+1}) Q(S_{t+1}, a) - Q(S_t, A_t)].
+\end{align}
+This algorithm moves deterministically in the same direction as Sarsa moves in \emph{expectation}, hence the name. It is more computationally complex than Sarsa, but eliminates the variance due to random selection of $A_{t+1}$. Given the same amount of experiences, it generally performs slightly better than Sarsa.
+
+\subsection{Maximisation Bias and Double Learning}
+All the control algorithms we have discussed so far involve some sort of maximisation in the construction of their target policies. This introduces a positive bias to the value estimates because they form uncertain estimates of the true values. This is known as the \emph{maximisation bias}. It is essentially down to the fact the the expectation of the max of a sample is $\geq$ the max of the expected values of the samples.\\
+
+To solve this we introduce the idea of \emph{double learning}, in which we learn two independent sets of value estimates $Q_1$ and $Q_2$, then at each time step we choose one of them at random and update it using the other as a target. This produces two unbiased estimates of the action-values (which could be averaged). Below we show an algorithm for \emph{double Q-learning}.
+
+\includegraphics[width=\textwidth]{\NotesImages/double_q_learning.png}
+
+
+\subsection{Games,  Afterstates, and other Special Cases}
+In this book we try to present a uniform approach to solving tasks, but sometimes more specific methods can do much better. \\
+
+We introduce the idea of \emph{afterstates}. Afterstates are relevant when the agent can deterministically change some aspect of the environment. In these cases, we are better to value the resulting state of the environment, after the agent has taken action and before any stochasticity, as this can reduce computation and speed convergence.\\
+
+Take chess as an example. One should choose as states the board positions \emph{after} the agent has taken a move, rather than before. This is because there are multiple states at $t$ than can lead to the board position that the opponent sees at $t+1$ (assuming we move second) via deterministic actions of the agent. 
