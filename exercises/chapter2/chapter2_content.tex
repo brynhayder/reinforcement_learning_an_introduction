@@ -1,0 +1,125 @@
+\section{Multi-armed Bandits}
+\subsection{Exercise 2.1}
+\subsubsection{Q}
+In $\varepsilon$-greedy action selection, for the case of two actions and $\varepsilon = 0.5$, what is the probability that the greedy action is selected?
+
+\subsubsection{A}
+0.5.
+
+
+\subsection{Exercise 2.2: Bandit example}
+\subsubsection{Q}
+Consider a $k$-armed bandit problem with $k = 4$ actions, denoted 1, 2, 3, and 4. Consider applying to this problem a bandit algorithm using $\varepsilon$-greedy action selection, sample-average action-value estimates, and initial estimates of $Q_1(a) = 0$, for all $a$. Suppose the initial sequence of actions and rewards is $A_1 = 1$, $R_1 =1$, $A_2 =2$, $R_2 =1$, $A_3 =2$, $R_3 =2$, $A_4 =2$, $R_4 =2$, $A_5 =3$, $R_5 =0$. On some of these time steps the $\varepsilon$ case may have occurred, causing an action to be selected at random. On which time steps did this definitely occur? On which time steps could this possibly have occurred?
+
+\subsubsection{A}
+$A_2$ and $A_5$ were definitely exploratory. Any of the others \emph{could} have been exploratory.
+
+
+\subsection{Exercise 2.3}
+\subsubsection{Q}
+In the comparison shown in Figure 2.2, which method will perform best in the long run in terms of cumulative reward and probability of selecting the best action? How much better will it be? Express your answer quantitatively.
+
+\subsubsection{A}
+The $\varepsilon = 0.01$ will perform better because in both cases as $t \to \infty$ we have $Q_t \to q_*$. The total reward and probability of choosing the optimal action will therefore be 10 times larger in this case than for $\varepsilon = 0.1$.
+
+
+\subsection{Exercise 2.4}
+\label{ex:2.4}
+\subsubsection{Q}
+If the step-size parameters, $\alpha_n$, are not constant, then the estimate $Q_n$ is a weighted average of previously received rewards with a weighting different from that given by (2.6). What is the weighting on each prior reward for the general case, analogous to (2.6), in terms of the sequence of step-size parameters?
+
+\subsubsection{A}
+Let $\alpha_0 = 1$, then 
+\begin{equation}
+    Q_{n + 1} = \left(\prod_{i=1}^n (1 - \alpha_i) \right) Q_1 + \sum_{i = 1}^{n}  \alpha_{i} R_{i} \prod_{k = i + 1}^n
+(1 - \alpha_k).
+\end{equation}
+Where $\prod_{i=x}^y f(i) \doteq 1$ if $x > y$.
+
+\subsection{Exercise 2.5 (programming)}
+\subsubsection{Q}
+Design and conduct an experiment to demonstrate the difficulties that sample-average methods have for non-stationary problems. Use a modified version of the 10-armed testbed in which all the $q_*(a)$ start out equal and then take independent random walks (say by adding a normally distributed increment with mean zero and standard deviation 0.01 to all the $q_*(a)$ on each step). Prepare plots like Figure 2.2 for an action-value method using sample averages, incrementally computed, and another action-value method using a constant step-size parameter, $\alpha$ = 0.1. Use $\varepsilon$ = 0.1 and longer runs, say of 10,000 steps.
+
+\subsubsection{A}
+\ProgrammingExercise
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_2_5/learning_curve.png}
+
+
+\subsection{Exercise 2.6: Mysterious Values}
+\subsubsection{Q}
+The results shown in Figure 2.3 should be quite reliable because they are averages over 2000 individual, randomly chosen 10-armed bandit tasks. Why, then, are there oscillations and spikes in the early part of the curve for the optimistic method? In other words, what might make this method perform particularly better or worse, on average, on particular early steps?
+
+\subsubsection{A}
+At some point after step 10, the agent will find the optimal value. It will then choose this value greedily. The small step-size parameter (small relative to the initialisation value of 5) means that the estimate of the optimal value will converge slowly towards its true value.\\
+
+It is likely that this true value is less than 5. This means that, due to the small step size, one of the sub-optimal actions will still have a value close to 5. Thus, at some point, the agent begins to act sub-optimally again.
+
+\subsection{Exercise 2.7: Unbiased Constant Step Trick}
+\subsubsection{Q}
+In most of this chapter we have used sample averages to estimate action values because sample averages do not produce the initial bias that constant step sizes do (see the analysis in (2.6)). However, sample averages are not a completely satisfactory solution because they may perform poorly on non-stationary problems. Is it possible to avoid the bias of constant step sizes while retaining their advantages on non-stationary problems? One way is to use a step size of
+\begin{equation}
+    \beta_t \doteq \alpha / \bar{o}_t,
+\end{equation}
+where $\alpha > 0$ is a conventional constant step size and $\bar{o}_t$ is a trace of one that starts at 0:
+\begin{equation}
+    \bar{o}_{t+1} = \bar{o}_t + \alpha (1 - \bar{o}_t)
+\end{equation}
+for $t \geq 1$ and with $\bar{o}_1 \doteq \alpha$.\\
+
+Carry out an analysis like that in (2.6) to show that $\beta_t$ is an exponential recency-weighted average \emph{without initial bias}. 
+
+\subsubsection{A}
+Consider the answer to \hyperref[ex:2.4]{Exercise 2.4}. There is no dependence of $Q_k$ on $Q_1$ for $k > 1$ since $\beta_1 = 1$. Now it remains to show that the weights in the remaining sum decrease as we look further into the past. That is
+\begin{equation}
+    w_i = \beta_i \prod_{k = i + 1}^{n} (1 - \beta_k)
+\end{equation}
+increases with $i$ for fixed n. For this, observe that
+\begin{equation}
+    \frac{w_{i+1}}{w_i} = \frac{\beta_{i+1}}{\beta_i(1 - \beta_{i + 1})} = \frac{1}{1 - \alpha} > 1
+\end{equation} 
+where we have assumed $\alpha < 1$. If $\alpha = 1$ then $\beta_t = 1 \,\, \forall \, t$.
+
+\subsection{Exercise 2.8: UCB Spikes}
+\subsubsection{Q}
+In Figure 2.4 the UCB algorithm shows a distinct spike in performance on the 11th step. Why is this? Note that for your answer to be fully satisfactory it must explain both why the reward increases on the 11th step and why it decreases on the subsequent steps. Hint: if $c = 1$, then the spike is less prominent.
+
+\subsubsection{A}
+In the first 10 steps the agent cycles through all of the actions because when $N_t(a) = 0$ then $a$ is considered maximal. On the 11th step the agent will most often then choose greedily. The agent will continue to choose greedily until $\mathrm{ln}(t)$ overtakes $N_t(a)$ for one of the other actions, in which case the agent begins to explore again hence reducing rewards.\\
+
+Note that, in the long run, $N_t = O(t)$ and $\mathrm{ln}(t) / t \to 1$. So this agent is `asymptotically greedy'.
+
+
+\subsection{Exercise 2.9}
+\subsubsection{Q}
+Show that in the case of two actions, the soft-max distribution is the same as that given by the logistic, or sigmoid, function often used in statistics and artificial neural networks.
+
+\subsubsection{A}
+Let the two actions be denoted by 0 and 1. Now
+\begin{equation}
+    \P{}(A_t = 1) = \frac{e^{H_t(1)}}{e^{H_t(1)} + e^{H_t(0)}} = \frac{1}{1 + e^{-x}}, 
+\end{equation}
+where $x = H_t(1) - H_t(0)$ is the relative preference of 1 over 0.
+
+\subsection{Exercise 2.10}
+\subsubsection{Q}
+Suppose you face a 2-armed bandit task whose true action values change randomly from time step to time step. Specifically, suppose that, for any time step, the true values of actions 1 and 2 are respectively 0.1 and 0.2 with probability 0.5 (case A), and 0.9 and 0.8 with probability 0.5 (case B). If you are not able to tell which case you face at any step, what is the best expectation of success you can achieve and how should you behave to achieve it? Now suppose that on each step you are told whether you are facing case A or case B (although you still don’t know the true action values). This is an associative search task. What is the best expectation of success you can achieve in this task, and how should you behave to achieve it?
+
+\subsubsection{A}
+I assume the rewards are stationary.\\
+
+One should choose the action with the highest expected reward. In the first case, both action 1 and 2 have expected value of 0.5, so it doesn't matter which you pick.\\
+
+In the second case one should run a normal bandit method separately on each colour. The expected reward from identifying the optimal actions in each case is 0.55.
+
+\subsection{Exercise 2.11 (programming)}
+\subsubsection{Q}
+Make a figure analogous to Figure 2.6 for the non-stationary case outlined in Exercise 2.5. Include the constant-step-size $\varepsilon$-greedy algorithm with $\alpha=0.1$. Use runs of 200,000 steps and, as a performance measure for each algorithm and parameter setting, use the average reward over the last 100,000 steps.
+
+\subsubsection{A}
+\ProgrammingExercise
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_2_11/action_values.png}
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_2_11/parameter_study.png}
+

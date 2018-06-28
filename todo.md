@@ -4,7 +4,7 @@
 ## LaTeX
 - read some latex docs to learn it properly
 - figure out how to typeset algorithms 
-- split the notes (and maybe exercises too) into one section per file
+
 
 ## code
 - docstrings

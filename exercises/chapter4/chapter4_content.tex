@@ -1,0 +1,108 @@
+\section{Dynamic Programming}
+
+\subsection{Exercise 4.1}
+\subsubsection{Q}
+In Example 4.1, if $\pi$ is the equiprobable random policy, what is $q_\pi(11, \mathtt{down})$? What is $q_\pi(7, \mathtt{down})$?
+
+\subsubsection{A}
+$q_\pi(11, \mathtt{down}) = -1$ since goes to terminal state. $q_\pi(7, \mathtt{down}) = -15$.
+
+\subsection{Exercise 4.2}
+\subsubsection{Q}
+In Example 4.1, suppose a new state $15$ is added to the gridworld just below state $13$, and its actions, \texttt{left}, \texttt{up}, \texttt{right}, and \texttt{down}, take the agent to states $12$, $13$, $14$, and $15$, respectively. Assume that the transitions from the original states are unchanged. What, then, is $v_\pi(15)$ for the equiprobable random policy? Now suppose the dynamics of state $13$ are also changed, such that action down from state $13$ takes the agent to the new state $15$. What is $v_\pi(15)$ for the equiprobable random policy in this case?
+
+\subsubsection{A}
+$v_\pi(15) = -20$ if dynamics unchanged. If dynamics changed then apparently the state value is the same, but you would need to verify Bellman equations for all states for this.
+
+\subsection{Exercise 4.3}
+\subsubsection{Q}
+What are the equations analogous to (4.3), (4.4), and (4.5) for the action-value function $q_\pi$ and its successive approximations by a sequence of functions $q_0, q_1, q_2, \dots$?
+
+\subsubsection{A}
+\begin{equation}
+    q_{k+1}(s, a) = \sum_{s', r} p(s', r | s, a)\left[r + \gamma \sum_{a'} \pi(a'|s)q_k(s', a')\right]
+\end{equation}
+
+\subsection{Exercise 4.4}
+\subsubsection{Q}
+The policy iteration algorithm on the previous page has a subtle bug in that it may never terminate if the policy continually switches between two or more policies that are equally good. This is ok for pedagogy, but not for actual use. Modify the pseudocode so that convergence is guaranteed.
+
+\subsubsection{A}
+One problem is that the $\argmax_a$ has ties broken arbitrarily, this means that the same value function can give rise to different policies.\\
+
+The way to solve this is to change the algorithm to take the whole set of maximal actions on each step and see if this set is stable and see if the policy is stable with respect to choosing actions from this set.
+
+
+\subsection{Exercise 4.5}
+\subsubsection{Q}
+How would policy iteration be defined for action values? Give a complete algorithm for computing $q_*$, analogous to that on page 80 for computing $q_*$. Please pay special attention to this exercise, because the ideas involved will be used throughout the rest of the book.
+
+\subsubsection{A}
+We know that
+\begin{equation}
+    v_\pi(s) = \sum_{a \in \mathcal{A}(s)} \pi(a|s)q_\pi(s, a)
+\end{equation}
+so we know that
+\begin{equation}
+    q_\pi(s, \pi'(s)) \geq \sum_{a \in \mathcal{A}(s)} \pi(a|s)q_\pi(s, a)
+\end{equation}
+if $\pi'$ is greedy with respect to $\pi$. So we know the algorithm still works for action values.\\
+
+All there is now is to substitute the update for the action-value update and make the policy greedy with respect to the last iteration's action-values. Also need to make sure that the $\argmax_a$ is done consistently.
+
+\subsection{Exercise 4.6}
+\subsubsection{Q}
+Suppose you are restricted to considering only policies that are $\varepsilon$-soft, meaning that the probability of selecting each action in each state, $s$, is at least $\varepsilon / |\mathcal{A}(s)|$. Describe qualitatively the changes that would be required in each of the steps 3, 2, and 1, in that order, of the policy iteration algorithm for $v_\pi$ (page 80).
+
+\subsubsection{A}
+\begin{enumerate}
+    \item No change (but need policy to be able to be stochastic of course)
+    \item Need to re-write the Bellman update $v(s) \longleftarrow \sum_{a \in \mathcal{A}(s)} \pi(a|s)\sum_{s', r}p(s', r|s, a)\left[ r + \gamma v(s') \right]$
+    \item Construct a greedy policy that puts weight on the greedy actions but is $\varepsilon$-soft. Be careful with the consistency of the $\argmax$.
+\end{enumerate}
+
+\subsection{Exercise 4.7 (programming): Jack's Car Rental}
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_questions/jacks_car_rental_example.png}
+
+First we reproduce the original results.
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_4_7/jacks_car_rental/jacks_car_rental.png}
+
+\subsubsection{Q}
+Write a program for policy iteration and re-solve Jack’s car rental problem with the following changes. One of Jack’s employees at the first location rides a bus home each night and lives near the second location. She is happy to shuttle one car to the second location for free. Each additional car still costs \$$2$, as do all cars moved in the other direction. In addition, Jack has limited parking space at each location. If more than $10$ cars are kept overnight at a location (after any moving of cars), then an additional cost of \$$4$ must be incurred to use a second parking lot (independent of how many cars are kept there). These sorts of nonlinearities and arbitrary dynamics often occur in real problems and cannot easily be handled by optimisation methods other than dynamic programming. To check your program, first replicate the results given for the original problem. If your computer is too slow for the full problem, cut all the numbers of cars in half.
+
+\subsubsection{A}
+\ProgrammingExercise\\
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_4_7/altered_car_rental.png}
+
+\subsection{Exercise 4.8}
+\subsubsection{Q}
+Why does the optimal policy for the gambler’s problem have such a curious form? In particular, for capital of 50 it bets it all on one flip, but for capital of 51 it does not. Why is this a good policy?
+
+\subsubsection{A}
+Since the coin is biased against us, we want to minimize the number of flips that we take. At 50 we can win with probability 0.4. At 51 if we bet small then we can get up to 52, but if we lose then we are still only back to 50 and we can again with with probability 0.4. (There is a whole paper on this problem called how to gamble if you must.)
+
+
+\subsection{Exercise 4.9 (programming): Gambler's Problem}
+\subsubsection{Q}
+Implement value iteration for the gambler's problem and solve it for $p_h = 0.25$ and $p_h = 0.55$. In programming, you may find it convenient to introduce two dummy states corresponding to termination with capital of $0$ and $100$, giving them values of $0$ and $1$ respectively. Show your results graphically, as in Figure 4.3. Are your results stable as $\theta \to 0$?
+
+\subsubsection{A}
+\ProgrammingExercise\\
+
+The process was stable as $\theta \to 0$ for $\P{}(\mathtt{win}) < 0.5$.
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_4_9/values_and_policy_pwin_25.eps}
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_4_9/values_and_policy_pwin_55.eps}
+
+\subsection{Exercise 4.10}
+\subsubsection{Q}
+What is the analog of the value iteration update (4.10) for action values, $q_{k+1}(s, a)$?
+
+\subsubsection{A}
+\begin{equation}
+    q_{k+1} = \max_{a'} \sum_{s', r} p(s', r| s, a)\left[r + \gamma q_k(s', a')\right]
+\end{equation}
+

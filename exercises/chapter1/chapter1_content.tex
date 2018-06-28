@@ -1,0 +1,54 @@
+\section{Introduction}
+\subsection{Exercise 1.1: Self-Play}
+\subsubsection{Q}
+Suppose, instead of playing against a random opponent, the reinforcement learning algorithm described above played against itself, with both sides learning. What do you think would happen in this case? Would it learn a different policy for selecting moves?
+
+\subsubsection{A}
+\begin{itemize}
+    \item Would learn a different policy than playing a fixed opponent since the opponent would also be changing in this case.
+    \item May not be able to learn an optimal strategy as the opponent keeps changing also.
+    \item Could get stuck in loops.
+    \item Policy could remain static since on average they would draw each iteration.
+\end{itemize}
+
+\subsection{Exercise 1.2: Symmetries}
+\subsubsection{Q}
+Many tic-tac-toe positions appear different but are really the same because of symmetries. How might we amend the learning process described above to take advantage of this? In what ways would this change improve the learning process? Now think again. Suppose the opponent did not take advantage of symmetries. In that case, should we? Is it true, then, that symmetrically equivalent positions should necessarily have the same value?
+
+\subsubsection{A}
+\begin{itemize}
+    \item We could label the states as unique up to symmetries so that our search space is smaller, this way we will get a better estimate of optimal play.
+    \item If we are playing an opponent who does not take symmetries into account when they are playing then we should not label the states as the same since the opponent is part of the environment and the environment is not the same in those states.
+\end{itemize}
+
+\subsection{Exercise 1.3: Greedy Play}
+\subsubsection{Q}
+Suppose the reinforcement learning player was greedy, that is, it always played the move that brought it to the position that it rated the best. Might it learn to play better, or worse, than a nongreedy player? What problems might occur
+
+\subsubsection{A}
+\begin{itemize}
+    \item The greedy player will not explore, so will in general perform worse than the non-greedy player
+    \item If the greedy player had a perfect estimate of the value of states then this would be fine.
+\end{itemize}
+
+\subsection{Exercise 1.4: Learning from Exploration}
+\subsubsection{Q}
+Suppose learning updates occurred after all moves, including exploratory moves. If the step-size parameter is appropriately reduced over time (but not the tendency to explore), then the state values would converge to a set of probabilities. What are the two sets of probabilities computed when we do, and when we do not, learn from exploratory moves? Assuming that we do continue to make exploratory moves, which set of probabilities might be better to learn? Which would result in more wins?
+\subsubsection{A}
+I think that an estimate for the probability of the state producing a win should be based on the optimal moves from that state.
+\begin{itemize}
+    \item The one in which we only record the optimal moves is the probability of our optimal agent winning. If we include exploration then this is the probability of the training agent winning.
+    \item Better to learn the probability of winning with no exploration since this is how the agent will perform in real time play.
+    \item Updating from optimal moves only will increase probability of winning.
+\end{itemize}
+
+\subsection{Exercise 1.5: Other Improvements}
+\subsubsection{Q}
+Can you think of other ways to improve the reinforcement learning player? Can you think of any better way to solve the tic-tac-toe problem as posed?
+
+\subsubsection{A}
+I'm not too sure here...
+\begin{itemize}
+    \item We could rank the draws as better than the losses.
+    \item We might like to try running multiple iterations of games before updating our weights as this might give a better estimate.
+\end{itemize}
