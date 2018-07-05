@@ -1,1 +1,137 @@
-\section{}
+\section{$n$-step Bootstrapping}
+$n$-step methods allow us to observe multiple time-steps of returns before updating a state with the observed data and a bootstrapped estimate of the value of the $n$th succeeding state.
+
+\subsection{$n$-step TD Prediction}
+Define the $n$-step return
+\begin{equation}
+    G_{t:t+n} \doteq \sum_{i=t}^{t+n-1}\gamma^{i-t}R_{i+1} + \gamma^n V_{t+n-1}(S_{t+n})
+\end{equation}
+where $n \geq 1$, $0 \leq t < T - n$ and $V_i$ is the estimated state-value function as of time $i$. If $t + n > T$ then $G_{t+n} \equiv G_t$, the standard return. The $n$-step return is the target for \emph{$n$-step TD} methods, note that $n-1$ rewards are observed and the succeeding value is bootstrapped with the latest estimate of the value function. The corresponding update for state-values is
+\begin{equation}
+    V_{t+n}(S_t) = V_{t+n - 1}(S_t) + \alpha [G_{t:t+n} - V_{t+n-1}(S_{t})]  \quad\quad 0 \leq t < T.
+\end{equation}
+Note that Monte-Carlo can be thought of as TD($\infty$)Pseudocode for $n$-step TD is given in the box below.
+
+\includegraphics[width=\textwidth]{\NotesImages/n_step_td_state_values.png}
+
+The $n$-step return obeys the \emph{error-reduction property}, and because of this $n$-step TD can be shown to converge to correct predictions (given a policy) under appropriate technical conditions. This property states that the $n$-step return is a better estimate than $V_{t+n-1}$ in the sense that the error on the worst prediction is always smaller
+\begin{equation}
+    \max_s \left|\Epi[G_{t:t+n}|S_t=s] - v_\pi(s)\right| \leq \gamma^n \max_s \left|V_{t+n-1}(s) - v_\pi(s)\right|
+\end{equation}
+
+\subsection{$n$-step Sarsa}
+\subsubsection*{Sarsa}
+We develop $n$-step methods for control. We generalise Sarsa to $n$-step Sarsa, or Sarsa($n$). This is done in much the same way as above, but with action-values as opposed to state-values. The $n$-step return in this case is defined as
+\begin{equation}
+    G_{t:t+n} \doteq \sum_{i=t}^{t+n-1}\gamma^{i-t}R_{i+1} + \gamma^n Q_{t+n-1}(S_{t+n}, A_{t+n})
+\end{equation}
+where $n \geq 1$, $0 \leq t < T - n$ and $Q_i$ is the estimated action-value function as of time $i$. If $t + n > T$ then $G_{t+n} \equiv G_t$, the standard return. The corresponding update is
+\begin{equation}
+    Q_{t+n}(S_t, A_t) = Q_{t+n-1}(S_t, A_t) + \alpha [G_{t:t+n} - Q_{t+n-1}(S_{t}, A_{t})]  \quad\quad 0 \leq t < T.
+\end{equation}
+
+\subsubsection*{Expected Sarsa}
+We define $n$-step expected Sarsa similarly
+\begin{equation}
+    G_{t:t+n} \doteq \sum_{i=t}^{t+n-1}\gamma^{i-t}R_{i+1} + \gamma^n \bar{V}_{t+n-1}(S_{t+n})
+\end{equation}
+where $n \geq 1$, $0 \leq t < T - n$ and $\bar{V}_i$ is the \emph{expected approximate value} of state $s$
+\begin{equation}
+    \bar{V}_i(s) \doteq \sum_a \pi(a|s)Q_i(s, a).
+\end{equation} 
+As always, if $t + n > T$ then $G_{t+n} \equiv G_t$, the standard return. The corresponding update is formally the same as above.
+
+
+\includegraphics[width=\textwidth]{\NotesImages/n_step_sarsa.png}
+
+
+\subsection{$n$-step Off-policy Learning}
+We can learn with $n$-step methods off-policy using the importance sampling ratio (target policy $\pi$ and behaviour policy $b$)
+\[
+    \rho_{t:h} \doteq \prod_{k=t}^{\text{min}(h, T-1)}\frac{\pi(A_k|S_k)}{b(A_k|S_k)}.
+\]
+For state-values we have 
+\[
+    V_{t+n}(S_t) \doteq V_{t+n-1}(S_t) + \alpha \rho_{t:t+n-1}[G_{t:t+n} - V_{t+n-1}(S_t)]
+\]
+and for action-values we have
+\[
+    Q_{t+n}(S_t, A_t) = Q_{t+n-1}(S_t, A_t) + \alpha \rho_{t+1:t+n-1}[G_{t:t+n} - Q_{t+n-1}(S_t, A_t)]
+\]
+note that for action values the importance sampling ratio starts one time-step later, because we are attempting to discriminate between actions at time $t$.
+
+\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_sarsa.png}
+
+\subsection{*Per-decision Methods with Control Variates}
+We have the standard recursion relation for the $n$-step return
+\[
+    G_{t:h} = R_{t+1} + \gamma G_{t+1:h}.
+\]
+For an off-policy algorithm, one would be tempted to simply weight this target by the importance sampling ratio. This method, however, shrinks the estimated value functions when the importance sampling ratio is 0, hence increasing variance. We thus introduce the \emph{control-variate} $(1 - \rho_t)V_{h-1}(S_t)$, giving an off-policy update of 
+\[
+    G_{t:h} = \rho_t (R_{t+1} + \gamma G_{t+1:h}) + (1 - \rho_t)V_{h-1}(S_t)
+\]
+where $G_{h:h} = V_{h-1}(S_h)$. Note that the control-variate has expected value 0, since the factors are uncorrelated and the expected value of the importance sampling ratio is 1.\\
+
+We can do a similar thing for action-values
+\[
+    G_{t:h} \doteq R_{t+1} + \gamma \rho_{t+1:h}\left( G_{t+1:h} - Q_{h-1}(S_{t+1}, A_{t+1}) \right) - \gamma \bar{V}_{h-1}(S_{t+1}),
+\]
+where once again the importance sampling ratio starts one time-step later.
+
+\subsubsection*{Control Variates in General}
+Suppose we want to estimate $\mu$ and assume we have an unbiased estimator for $\mu$ in $m$. Suppose we calculate another statistic $t$ such that $\mathbb{E}\left[t\right]=\tau$ is a known value. Then
+\[
+    m^\star = m + c\left(t-\tau\right)
+\]
+is also an unbiased estimator for $\mu$ for any $c$, with variance
+\[
+    \textrm{Var}\left(m^{\star}\right)=\textrm{Var}\left(m\right) + c^2\,\textrm{Var}\left(t\right) + 2c\,\textrm{Cov}\left(m,t\right).
+\]
+
+It is easy to see that taking
+
+\[
+    c = - \frac{\textrm{Cov}\left(m,t\right)}{\textrm{Var}\left(t\right)}
+\]
+minimizes the variance of $m^{\star}$. With this choice
+
+\begin{align}
+\textrm{Var}(m^{\star}) & =\textrm{Var}(m) - \frac{\left[\textrm{Cov}(m,t)\right]^2}{\textrm{Var}(t)} \\
+& = (1-\rho_{m,t}^2)\textrm{Var}(m)
+\end{align}
+where $\rho_{m,t}=\textrm{Corr}\left(m,t\right) $ is the Pearson correlation coefficient of $m$ and $t$. The greater the value of $|\rho_{m,t}|$, the greater the variance reduction achieved.
+
+\subsection{Off-policy Learning Without Importance Sampling: The $n$-step Tree Backup Algorithm}
+We introduce the $n$-step \emph{tree-backup algorithm} algorithm using the return
+\begin{equation}
+    G_{t:t+n} \doteq R_{t+1} + \gamma \sum_{a \neq A_{t+1}} \pi(a|S_{t+1})Q_{t+n-1}(S_{t+1}, a) + \gamma \pi(A_{t+1}|S_{t+1})G_{t+1:t+n}
+\end{equation}
+for $t < T-1$, $n > 1$ and with $G_{i:i} = 0$ and $G_{T-1:t+n} = R_T$. This algorithm updates $S_t$ with bootstrapped, probability weighted action-values of \emph{all} actions that were not taken all along the trajectory and recursively includes the rewards realised, weighted by the probability of their preceding actions under the policy. Pseudocode given below.
+
+\includegraphics[width=\textwidth]{\NotesImages/n_step_tree_backup.png}
+    
+    
+\subsection{*A Unifying Algorithm: $n$-step $Q(\sigma)$}
+We introduce an algorithm which, at each time step, can choose to either take an action as a sample as in Sarsa or to take an expectation over all possible actions as in tree-backup. \\
+
+Define a sequence $\sigma_t \in [0, 1]$ that at each time step chooses a proportion of sampling vs. expectation. This generalises Sarsa and tree-backup by allowing each update to be a linear combination of the two ideas. The corresponding return (off-policy) is 
+\begin{align}
+    G_{t:h} \doteq R_{t+1} &+ \gamma \left(\sigma_{t+1}\rho_{t+1}  (1- \sigma_{t+1})\pi(A_{t+1}\vert S_{t+1})\right) \left( G_{t+1:h} - Q_{h-1}(S_{t+1}, A_{t+1}) \right) \\ 
+                           &+ \gamma \bar{V}_{h-1}(S_{t+1}),
+\end{align}
+for $t < h< T$, with $G_{h:h} \doteq Q_{h-1}(S_h, A_h)$ if $h<T$ and $G_{T-1:T} \doteq R_t$ if $h=T$. Pseudocode given below.
+
+\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_Q_sigma.png}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
