@@ -26,3 +26,16 @@ def multi_ax_legend(*ax, **kwargs):
         lins.extend(morelins)
         labs.extend(morelabs)
     return ax0.legend(lins, labs, **kwargs)
+
+
+def savefig(fig, path, **kwargs):
+    kws = dict(
+            # dpi=1000,
+            # format="eps",
+            bbox_inches="tight"
+    )
+    kws.update(kwargs)
+    return fig.savefig(
+            path,
+            **kws
+    )

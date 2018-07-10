@@ -12,7 +12,7 @@ import os
 import numpy as np
 
 import constants as c
-from generic.policy import EpsilonGreedyPolicy, GreedyPolicy
+from generic.policies import EpsilonGreedyPolicy, GreedyPolicy
 from generic import updates
 
 Episode = namedtuple('Episode', ['states', 'actions', 'rewards'])

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import constants as c
-from generic.policy import EpsilonGreedyPolicy, GreedyPolicy
+from generic.policies import EpsilonGreedyPolicy, GreedyPolicy
 
 from exercises.ex_6_9.windy_gridworld import WindyGridWorld, initial_action_values
 
