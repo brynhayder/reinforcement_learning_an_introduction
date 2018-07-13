@@ -169,7 +169,7 @@ class RaceTrack:
                 self.car_position = self.random_starting_position()
                 self.car_velocity = self._stationary()
                 return self.crash_penalty
-        return self.transition_penalty  # reward for the transition
+        return self.transition_penalty  # expected_reward for the transition
 
     def __str__(self):
         return self.track_string(self.format_dict)
@@ -285,7 +285,7 @@ class Brain:
         # larger than the largest possible return on the track (since then it is possible that the
         # algorithm will cease to learn anything if there is an action that is necessary to termination).
         # We therefore initialise the values to the worst possible return for the track (without going off).
-        # Note that if the reward dynamics are changed for this problem, then this will need to be checked.
+        # Note that if the expected_reward dynamics are changed for this problem, then this will need to be checked.
         init = - len(racetrack.track_positions) ** 2
         return {
             s: OrderedDict((a, init) for a in car.possible_actions(s))

@@ -6,7 +6,7 @@ created: 09/07/2018 16:08
 ---------------------------------
 
 
-I changed the example to give a negative reward for each timestep because this means that I don't
+I changed the example to give a negative expected_reward for each timestep because this means that I don't
 have to implement random tie-breaking with max in the action-selection. It also makes convergence faster
 since rewards are seen immediately.
 

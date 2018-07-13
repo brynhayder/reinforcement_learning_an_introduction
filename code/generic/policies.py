@@ -19,11 +19,28 @@ def greedy(state_action_values):
 
 # not sure if these policy classes should keep references to the action values. Maybe not...
 class GreedyPolicy:
-    def __init__(self, action_values):
+    def __init__(self, action_values, cache=False):
+        """
+        A greedy policy.
+
+        Args:
+            action_values (dict): Action Values
+            cache (bool): Whether to cache the policy decisions, useful if you only want to evaluate the policy and
+                you won't be updating the action values
+        """
         self.action_values = action_values
+        self._cache = cache
+
+        if cache:
+            self._greedy = dict()
+
+    def _cache_call(self, state):
+        if state not in self._greedy:
+            self._greedy[state] = greedy(self.action_values[state])
+        return self._greedy[state]
 
     def __call__(self, state):
-        return greedy(self.action_values[state])
+        return self._cache_call(state) if self._cache else greedy(self.action_values[state])
 
 
 class EpsilonGreedyPolicy:

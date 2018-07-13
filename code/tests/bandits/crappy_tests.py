@@ -71,16 +71,16 @@ class BanditAgentTestCase(unittest.TestCase):
     # print('------------------------------')
     # print('Results')
     # print('------------------------------')
-    # print('{:<10} {:<10} {:<10}'.format('choice', 'reward', 'optimal'))
+    # print('{:<10} {:<10} {:<10}'.format('choice', 'expected_reward', 'optimal'))
     # print('------------------------------')
     # choices = list()
     # for row in samples:
     #     choice = agent.action()
     #     choices.append(choice)
-    #     reward = row[choice]
-    #     agent.update(choice, reward)
+    #     expected_reward = row[choice]
+    #     agent.update(choice, expected_reward)
     #     optimal = np.argmax(row)
-    #     print('{:<10} {:<10} {:<10}'.format(choice, '{:.2f}'.format(reward), optimal))
+    #     print('{:<10} {:<10} {:<10}'.format(choice, '{:.2f}'.format(expected_reward), optimal))
     # print('------------------------------')
 
 

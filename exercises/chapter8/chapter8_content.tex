@@ -1,10 +1,64 @@
 \section{Planning and Learning with Tabular Methods}
 
-\subsection{Exercise 8.4 (programming)}
+\subsection{Exercise 8.1}
+\subsubsection*{Q}
+The non-planning method looks particularly poor in Figure 8.3 because it is a one-step method; a method using multi-step bootstrapping would do better. Do you think one of the multi-step bootstrapping methods from Chapter 7 could do as well as the Dyna method? Explain why or why not.
+\subsubsection*{A}
+Dyna updates using all past experience so quickly synthesises this into an optimal trajectory. $n$-step bootstrapping might be slower because it only states visited in the last $n$ steps.
 
-\subsubsection{Q}
+\subsection{Exercise 8.2}
+\subsubsection*{Q}
+Why did the Dyna agent with exploration bonus, Dyna-Q+, perform better in the first phase as well as in the second phase of the blocking and shortcut experiments?
+\subsubsection*{A}
+Increased exploration means Dyna-Q+ finds the optimal policy quicker than Dyna-Q. Dyna-Q may find a trajectory that works but is suboptimal and then have to wait a long time for it to take enough exploratory actions to find an optimal policy.
+
+\subsection{Exercise 8.3}
+\subsubsection*{Q}
+Careful inspection of Figure 8.5 reveals that the difference between Dyna-Q+ and Dyna-Q narrowed slightly over the first part of the experiment. What is the reason for this?
+
+\subsubsection*{A}
+Dyna-Q+ will take suboptimal actions in order to explore (when $\tau$ gets large). Dyna-Q will not do this so has better asymptotic performance.
+
+\subsection{Exercise 8.4 (programming)}
+\subsubsection*{Q}
 The exploration bonus described above actually changes the estimated values of states and actions. Is this necessary? Suppose the bonus $\kappa \sqrt{\tau}$ was used not in updates, but solely in action selection. That is, suppose the action selected was always that for which $Q(S_t, a) + \kappa \sqrt{\tau(S_t, a)}$ was maximal. Carry out a gridworld experiment that tests and illustrates the strengths and weaknesses of this alternate approach.
 
-\subsubsection{A}
+\subsubsection*{A}
 \ProgrammingExercise{}\\
+
+The change means that exploration only takes into account the next action, not whole trajectories. In the Dyna-Q+ algorithm can explore whole new paths through the planning stage.\\
+
+This is backed up by the results. The altered Dyna-Q+ learns the new path slower because it can't plan new trajectories.
+\\
 \includegraphics[width=\textwidth]{\ExerciseOutput/ex_8_4/dyna_q_comparison.png}
+
+\subsection{Exercise 8.5}
+\subsubsection*{Q}
+How might the tabular Dyna-Q algorithm shown on page 164 be modified to handle stochastic environments? How might this modification perform poorly on changing environments such as considered in this section? How could the algorithm be modified to handle stochastic environments \emph{and} changing environments?
+\subsubsection*{A}
+\begin{itemize}
+    \item You could take frequency of occurrences of transitions to estimate the transition probability for the model. (These would be the MLE estimates.)
+    \item Make expected updates when planning.
+    \item This would would present an issue if the environment changed since the changes would just be reflected in changing transition probabilities (which could take a long time to reflect the change in the environment.)
+    \item A solution to this could be to use an exploration bonus to encourage the agent to continue to select various states and keep the model up to date.
+    \item A better solution would be to add some notion of confidence to the model estimates of the transition probabilities. Could model the probabilities like 
+    \[ 
+        p(s, a, s') = \hat{p}(s, a, s')(1 - \sigma(\tau)) + \sigma(\tau)e,
+    \]
+    where $\hat{p}$ is the MLE estimate of the probabilities, $e$ is the equiprobable estimate and $\sigma(\tau)$ is a sigmoid of the time since the state-action pair $(s, a)$ was list visited.
+\end{itemize}
+
+\subsection{Exercise 8.6}
+\subsubsection*{Q}
+The analysis above assumed that all of the \emph{b} possible next states were equally likely to occur. Suppose instead that the distribution was highly skewed, that some of the \emph{b} states were much more likely to occur than most. Would this strengthen or weaken the case for sample updates over expected updates? Support your answer.
+\subsubsection*{A}
+If the transition probabilities are skewed then the expected updates perform the same while sample updates get accurate on the most probably outcomes very quickly. This strengthens the case for sample updates.
+
+
+\subsection{Exercise 8.7}
+\subsubsection*{Q}
+\subsubsection*{A}
+
+\subsection{Exercise 8.8}
+\subsubsection*{Q}
+\subsubsection*{A}

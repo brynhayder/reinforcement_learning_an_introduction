@@ -46,7 +46,7 @@ def value_iteration(values, environment, tolerance, verbose=False):
     while delta >= tolerance:
         old_values = values
         values = [value_update(s, old_values, environment) for s in environment.possible_states]
-        values.append(1);
+        values.append(1)
         values.insert(0, 0)
         values = np.array(values)
         delta = np.max(np.abs(old_values - values))

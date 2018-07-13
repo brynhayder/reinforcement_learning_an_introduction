@@ -48,7 +48,7 @@ Now consider a policy that is greedy with respect to $q_\pi(s, a)$. Define
 \begin{align}
     \pi'(s) &= \argmax_a q_\pi(s, a) \\ 
             &= \argmax_a \E{} [R_{t+1} + \gamma v_\pi(S_{t+1}) | S_t=s, A_t=a] \\
-            & \argmax_a \sum_{s', r} p(s', r|s, a)[ r + \gamma v_\pi(s')].
+            &= \argmax_a \sum_{s', r} p(s', r|s, a)[ r + \gamma v_\pi(s')].
 \end{align}
 Now we can use $v_\pi$ to get $\pi' \geq \pi$, then use $v_{\pi'}$ to get \emph{another} policy. (In the above, ties are broken arbitrarily when the policy is deterministic. If the policy is stochastic, we accept any policy that assigns zero probability to sub-optimal actions.)\\
 

@@ -10,9 +10,9 @@
 
 ## code
 - docstrings
-- tests for bandit problems code
+- tests for bandit problems code (and everything else...)
 - fix weird virtual environment behaviour (root conda getting in the way when you type source). Can't activate env atm
 - update requirements file
-- all the shebangs at the top of the scripts are wrong
+- all the shebangs at the top of the scripts may be wrong given the virtual environments
 
 
