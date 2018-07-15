@@ -12,6 +12,11 @@ import numpy as np
 
 from generic import utils, updates
 
+"""
+- later should refactor out the model into a class that can be updated
+
+"""
+
 
 class DynaQAgent:
     def __init__(self, policy, n_plan_iter, alpha, gamma, random_state=None):

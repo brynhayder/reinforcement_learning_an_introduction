@@ -57,8 +57,21 @@ If the transition probabilities are skewed then the expected updates perform the
 
 \subsection{Exercise 8.7}
 \subsubsection*{Q}
+Some of the graphs in Figure 8.8 seem to be scalloped in their early portions, particularly the upper graph for $b = 1$ and the uniform distribution. Why do you think this is? What aspects of the data shown support your hypothesis?
 \subsubsection*{A}
+In the case of the uniform distribution of updates and $b=1$, the start state is visited roughly once every $|\mathcal{S}|$ updates. When this happens, the action values of the neighbourhood of the start state are updated and their undergo a greater change than when the states that are not in the neighbourhood are the start state are updated. Thus, when the policy is evaluated, the value of the start state changes a lot if the start state has been visited recently, and not so much otherwise (since the change comes from values backed up from states far away from the start state).\\
 
-\subsection{Exercise 8.8}
+In the on-policy case, the start state is visited much more often (on average more than once every 10 updates, since $\P{}(\texttt{terminate}) = 0.1$) so it does not exhibit this behaviour. When $b$ is larger there are more connections between states, so the neighbourhood of the start state is larger, so this feature is also reduced.
+
+\subsection{Exercise 8.8 (programming)}
 \subsubsection*{Q}
+Replicate the experiment whose results are shown in the lower part of Figure 8.8, then try the same experiment but with $b = 3$. Discuss the meaning of your results.
+
 \subsubsection*{A}
+\ProgrammingExercise{}\\
+\mbox{}\\
+Charts show averages of 200 runs. We see that in the $b=3$ case the uniformly distributed updates overtakes the on-policy updates much quicker. This is due to the greater complexity of the state-space (the number of states on which the value of the starting state depends is exponential in $b$), of which the on-policy updates neglects large portions. \\
+\includegraphics[width=\textwidth]{\ExerciseOutput/ex_8_8/update_distribution_comparison_10000_1.png}
+\mbox{}\\
+\includegraphics[width=\textwidth]{\ExerciseOutput/ex_8_8/update_distribution_comparison_10000_3.png}
+
