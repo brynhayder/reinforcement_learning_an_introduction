@@ -2,7 +2,7 @@
 \section{Monte Carlo Methods}
 Monte Carlo methods learn state and action values by sampling and averaging returns (i.e. not from dynamics like DP). These methods learn from experience (real or simulated) and require no prior knowledge of the environments dynamics.\\
 
-Monte Carlo methods tus require well defined returns, so we will consider them only for episodic tasks. Only on completion of an episode do values and policies change.\\
+Monte Carlo methods thus require well defined returns, so we will consider them only for episodic tasks. Only on completion of an episode do values and policies change.\\
 
 We still use the generalised policy iteration framework, but we adapt it so that we learn the value function from experience rather than compute it \emph{a priori}.
 
@@ -15,16 +15,16 @@ The idea is to average the returns following each state to get an estimate of th
 Given enough observations, the sample average converges to the true state value under the policy $\pi$.\\
 
 Given a policy $\pi$ and a set of episodes, here are two ways in which we might estimate state values
-\begin{description}
-    \item[First Visit MC] average returns from first visit to state $s$ in order to estimate $v_\pi(s)$
-    \item[Every Visit MC] average returns following every visit to state $s$.
-\end{description}
+\begin{itemize}
+    \item \emph{First Visit MC} average returns from first visit to state $s$ in order to estimate $v_\pi(s)$
+    \item \emph{Every Visit MC} average returns following every visit to state $s$.
+\end{itemize}
 
 First visit MC generates iid estimates of $v_\pi(s)$ with finite variance, so the sequence of estimates converges to the expected value by the law of large numbers as visits to $s$ tend to $\infty$. Every visit MC does not generate independent estimates, but still converges.\\
 
-An algorithm for first visit MS (what we will focus on) is below. Every visit is the same, just without the check for $S_k$ occurring earlier in the episode.
+An algorithm for first visit MS (what we will focus on) is below. Every visit is the same, just without the check for $S_k$ occurring earlier in the episode.\\
 
-\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/first_visit_mc_algo.png}
+\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/first_visit_mc_algo.png} \\ 
 
 Monte Carlo methods are often used even when the dynamics of the environment are knowable, e.g. in Blackjack. It is often much easier to create sample games than it is to calculate environment dynamics directly.\\
 
@@ -45,16 +45,16 @@ For now we assume exploring start. Later we will come back to the issue of \emph
 \subsection{Monte Carlo Control}
 We make use of the GPI framework for action-values. Policy evaluation is done as described. Policy improvement is done by making the policy greedy with respect to the action-value function, so no model is needed for this step
 \[
-    \pi(s) \doteq \argmax_a q_(s, a).
+    \pi(s) \doteq \argmax_a q(s, a).
 \]
 
 We generate a sequence of policies $\pi_k$ each greedy with respect to $q_{\pi_{k-1}}(s, a)$. The policy improvement theorem applies: for all $s \in \mathcal{S}$
-\begin{align}
-    q_{\pi_k}(s, a) &= q_{\pi_k}(s, \argmax_a q_\pi(s, a)) \\
+\begin{align*}
+    q_{\pi_k}(s, a=\pi_{k+1}(s)) &= q_{\pi_k}(s, \argmax_a q_\pi(s, a)) \\
                     &= \max_a q_{\pi_k}(s, a) \\
-                    \geq q_{\pi_k}(s, \pi_k(s))\\
-                    = v_{\pi_k}(s)
-\end{align}
+                    &\geq q_{\pi_k}(s, \pi_k(s))\\
+                    &= v_{\pi_k}(s)
+\end{align*}
 
 So $\pi_{k+1}$ uniformly better than $\pi_k$ or it is optimal. \\
 
@@ -66,9 +66,9 @@ Two approaches to avoid infinitely many episodes:
     \item Stop policy evaluation after a certain number of episodes, moving the action value towards $q_{\pi_k}$, then go to policy improvement.
 \end{enumerate}
 
-For MC policy evaluation, it is natural to alternate policy evaluation and improvement on a episode by episode basis. We give such an algorithm below (with the assumption of exploring starts).
+For MC policy evaluation, it is natural to alternate policy evaluation and improvement on a episode by episode basis. We give such an algorithm below (with the assumption of exploring starts).\\
 
-\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/mc_policy_iteration_exploring_starts.png}
+\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/mc_policy_iteration_exploring_starts.png}\\
 
 It is easy to see that optimal policies are a fixed point of this algorithm. Whether this algorithm converges in general is still, however, an open question.
 
@@ -79,8 +79,9 @@ On-policy methods evaluate or improve the policy that is used to make decisions,
 \subsubsection*{On-Policy Techniques without Exploring Starts}
 We consider $\varepsilon$-greedy policies that put probability $1 - \varepsilon + \frac{\varepsilon}{|\mathcal{A}(s)|}$ on the maximal action and $\frac{\varepsilon}{|\mathcal{A}(s)|}$ on each of the others. These are examples of $\varepsilon$-soft policies in which $\pi(a|s) \geq \frac{\varepsilon}{|\mathcal{A}(s)|}$.\\
 
-We use this idea in the GPI framework:
-\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/on_policy_mc_algo.png}
+We use this idea in the GPI framework:\\
+
+\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/on_policy_mc_algo.png}\\
 
 We now show that an $\varepsilon$-greedy policy with respect to $q_\pi$, $\pi'$, is an improvement over any $\varepsilon$-soft policy $\pi$. For any $s \in \mathcal{S}$
 \begin{align}
@@ -96,7 +97,7 @@ This satisfies the condition of the policy improvement theorem so we now know th
 
 Previously, with deterministic greedy policies, we would get automatically that fixed points of policy iteration are optimal policies since
 \[
-    v_*(s) \doteq max_\pi v_\pi(s) \quad \forall s \in \mathcal{S}.
+    v_*(s) \doteq \max_\pi v_\pi(s) \quad \forall s \in \mathcal{S}.
 \]
 Now our policies are not deterministically greedy, our value updates do not take this form. We note, however, that we can consider an equivalent problem where we change the environment to select state and reward transitions at random with probability $\varepsilon$ and do what our agent asks with probability $1 - \varepsilon$. We have moved the stochasticity of the policy into the environment, creating an equivalent problem. The optimal value function in the new problem satisfies its Bellman equation
 \begin{align}
@@ -144,7 +145,7 @@ Introduce new notation:
     \item Let $G_t$ be the returns from $t$ to $T(t)$
 \end{itemize}
 
-We can now give two methods of values for $\pi$ from returns from $b$:
+We can now give two methods of values for $\pi$ from returns from $b$:\\
 {\bfseries{Ordinary Importance Sampling}}
 \begin{equation}
     V(s) \doteq \frac{\sum_{t\in \mathcal{T}(s)} \rho_{t:T-1}G_t}{|\mathcal{T}(s)|}
@@ -175,15 +176,15 @@ We can do this with the following update rules
 \end{align}
 where $C_0 = 0$ and $V_1$ is arbitrary (notice that it cancels out as $V_2 = G_1$).\\
 
-Below is an algorithm for off-policy weighted importance sampling (set $b=\pi$ for on policy). The estimator $Q$ converges to $q_\pi$ for all encountered state-action pairs.
+Below is an algorithm for off-policy weighted importance sampling (set $b=\pi$ for on policy). The estimator $Q$ converges to $q_\pi$ for all encountered state-action pairs.\\
 
-\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/off_policy_mc_prediction_algo.png}
+\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/off_policy_mc_prediction_algo.png}\\
 
 
 \subsection{Off-Policy Monte Carlo Control}
-Below is an algorithm for estimating $\pi_*$ and $q_*$ in the GPI framework. The target policy $\pi$ is the greedy policy with respect to $Q$, which is an estimate of $q_\pi$. This algorithm converges to $q_\pi$ as long as an infinite number of returns are observed for each state-action pair. This can be achieved by making $b$ $\varepsilon$-soft. The policy $\pi$ converges to $\pi_*$ at all encountered states even if $b$ changes (to another $\varepsilon$-soft policy) between or within episodes.
+Below is an algorithm for estimating $\pi_*$ and $q_*$ in the GPI framework. The target policy $\pi$ is the greedy policy with respect to $Q$, which is an estimate of $q_\pi$. This algorithm converges to $q_\pi$ as long as an infinite number of returns are observed for each state-action pair. This can be achieved by making $b$ $\varepsilon$-soft. The policy $\pi$ converges to $\pi_*$ at all encountered states even if $b$ changes (to another $\varepsilon$-soft policy) between or within episodes.\\
 
-\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/off_policy_mc_control_algo.png}
+\includegraphics[width=\textwidth]{\ProjectDir/data/notes_images/off_policy_mc_control_algo.png}\\
 
 Notice that this policy only learns from episodes in which $b$ selects only greedy actions after some timestep. This can greatly slow learning.
 

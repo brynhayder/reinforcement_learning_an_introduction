@@ -25,7 +25,7 @@ Clearly, $v_k = v_\pi$ is a fixed point. The sequence $\{v_k\}$ can be shown in 
 
 Let $\pi$, $\pi'$ be any pair of deterministic policies, such that
 \begin{equation}
-    q_\pi(s, \pi(s)) \geq v_\pi(s) \quad \forall s \in \mathcal{S}.
+    q_\pi(s, \pi'(s)) \geq v_\pi(s) \quad \forall s \in \mathcal{S}.
 \end{equation}
 That is, $\pi'$ is as least as good as $\pi$. Then we have (shown below)
 \begin{equation}
@@ -33,7 +33,7 @@ That is, $\pi'$ is as least as good as $\pi$. Then we have (shown below)
 \end{equation}
 so $\pi'$ gives at least as good (expected) return as $\pi$.\\
 
-The argument below also shows that if $q_\pi(s, \pi(s)) > v_\pi(s)$ at any $s$, then there is at least one $s$ for which $v_{\pi'}(s) > v_\pi(s)$.
+The argument below also shows that if $q_\pi(s, \pi'(s)) > v_\pi(s)$ at any $s$, then there is at least one $s$ for which $v_{\pi'}(s) > v_\pi(s)$.
 \subsubsection*{proof:}
 \begin{align*}
     v_\pi(s) & \leq q_\pi(s, \pi'(s)) \\
@@ -62,7 +62,7 @@ therefore
 \]
 so we get from this process a monotonically increasing sequence of policies.\\
 
-Note also that is $\pi'$ is as good as $\pi$ then $v_{\pi'} = v_\pi$ and $\forall s \in \mathcal{S}$
+Note also that if $\pi'$ is as good as $\pi$ then $v_{\pi'} = v_\pi$ and $\forall s \in \mathcal{S}$
 \begin{align*}
     v_\pi &= \max_a \E{}[R_{t+1} + \gamma v_{\pi'(S_{t+1})}| S_t=s, A_t=a]\\
           &= \max_a \sum_{s', r} p(s', r|s, a)(r + \gamma v_{\pi'}(s'))

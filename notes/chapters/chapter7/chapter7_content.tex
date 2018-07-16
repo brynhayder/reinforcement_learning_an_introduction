@@ -10,9 +10,9 @@ where $n \geq 1$, $0 \leq t < T - n$ and $V_i$ is the estimated state-value func
 \begin{equation}
     V_{t+n}(S_t) = V_{t+n - 1}(S_t) + \alpha [G_{t:t+n} - V_{t+n-1}(S_{t})]  \quad\quad 0 \leq t < T.
 \end{equation}
-Note that Monte-Carlo can be thought of as TD($\infty$)Pseudocode for $n$-step TD is given in the box below.
+Note that Monte-Carlo can be thought of as TD($\infty$)Pseudocode for $n$-step TD is given in the box below.\\
 
-\includegraphics[width=\textwidth]{\NotesImages/n_step_td_state_values.png}
+\includegraphics[width=\textwidth]{\NotesImages/n_step_td_state_values.png}\\
 
 The $n$-step return obeys the \emph{error-reduction property}, and because of this $n$-step TD can be shown to converge to correct predictions (given a policy) under appropriate technical conditions. This property states that the $n$-step return is a better estimate than $V_{t+n-1}$ in the sense that the error on the worst prediction is always smaller
 \begin{equation}
@@ -39,11 +39,10 @@ where $n \geq 1$, $0 \leq t < T - n$ and $\bar{V}_i$ is the \emph{expected appro
 \begin{equation}
     \bar{V}_i(s) \doteq \sum_a \pi(a|s)Q_i(s, a).
 \end{equation} 
-As always, if $t + n > T$ then $G_{t+n} \equiv G_t$, the standard return. The corresponding update is formally the same as above.
+As always, if $t + n > T$ then $G_{t+n} \equiv G_t$, the standard return. The corresponding update is formally the same as above\\
 
 
-\includegraphics[width=\textwidth]{\NotesImages/n_step_sarsa.png}
-
+\includegraphics[width=\textwidth]{\NotesImages/n_step_sarsa.png}\\
 
 \subsection{$n$-step Off-policy Learning}
 We can learn with $n$-step methods off-policy using the importance sampling ratio (target policy $\pi$ and behaviour policy $b$)
@@ -58,9 +57,9 @@ and for action-values we have
 \[
     Q_{t+n}(S_t, A_t) = Q_{t+n-1}(S_t, A_t) + \alpha \rho_{t+1:t+n-1}[G_{t:t+n} - Q_{t+n-1}(S_t, A_t)]
 \]
-note that for action values the importance sampling ratio starts one time-step later, because we are attempting to discriminate between actions at time $t$.
+note that for action values the importance sampling ratio starts one time-step later, because we are attempting to discriminate between actions at time $t$.\\
 
-\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_sarsa.png}
+\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_sarsa.png}\\
 
 \subsection{*Per-decision Methods with Control Variates}
 We have the standard recursion relation for the $n$-step return
@@ -107,9 +106,9 @@ We introduce the $n$-step \emph{tree-backup algorithm} algorithm using the retur
 \begin{equation}
     G_{t:t+n} \doteq R_{t+1} + \gamma \sum_{a \neq A_{t+1}} \pi(a|S_{t+1})Q_{t+n-1}(S_{t+1}, a) + \gamma \pi(A_{t+1}|S_{t+1})G_{t+1:t+n}
 \end{equation}
-for $t < T-1$, $n > 1$ and with $G_{i:i} = 0$ and $G_{T-1:t+n} = R_T$. This algorithm updates $S_t$ with bootstrapped, probability weighted action-values of \emph{all} actions that were not taken all along the trajectory and recursively includes the rewards realised, weighted by the probability of their preceding actions under the policy. Pseudocode given below.
+for $t < T-1$, $n > 1$ and with $G_{i:i} = 0$ and $G_{T-1:t+n} = R_T$. This algorithm updates $S_t$ with bootstrapped, probability weighted action-values of \emph{all} actions that were not taken all along the trajectory and recursively includes the rewards realised, weighted by the probability of their preceding actions under the policy. Pseudocode given below.\\
 
-\includegraphics[width=\textwidth]{\NotesImages/n_step_tree_backup.png}
+\includegraphics[width=\textwidth]{\NotesImages/n_step_tree_backup.png}\\
     
     
 \subsection{*A Unifying Algorithm: $n$-step $Q(\sigma)$}
@@ -120,10 +119,10 @@ Define a sequence $\sigma_t \in [0, 1]$ that at each time step chooses a proport
     G_{t:h} \doteq R_{t+1} &+ \gamma \left(\sigma_{t+1}\rho_{t+1}  (1- \sigma_{t+1})\pi(A_{t+1}\vert S_{t+1})\right) \left( G_{t+1:h} - Q_{h-1}(S_{t+1}, A_{t+1}) \right) \\ 
                            &+ \gamma \bar{V}_{h-1}(S_{t+1}),
 \end{align}
-for $t < h< T$, with $G_{h:h} \doteq Q_{h-1}(S_h, A_h)$ if $h<T$ and $G_{T-1:T} \doteq R_t$ if $h=T$. Pseudocode given below.
+for $t < h< T$, with $G_{h:h} \doteq Q_{h-1}(S_h, A_h)$ if $h<T$ and $G_{T-1:T} \doteq R_t$ if $h=T$. Pseudocode given below.\\
 
-\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_Q_sigma.png}
-    
+\includegraphics[width=\textwidth]{\NotesImages/off_policy_n_step_Q_sigma.png}\\
+
     
     
     
