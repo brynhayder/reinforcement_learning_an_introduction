@@ -1,0 +1,128 @@
+\section{On-policy Prediction with Approximation}
+
+In this section we consider the applications of function approximation techniques in reinforcement learning, to learn mappings from states to values. Typically we will consider parametric functional forms, in which case we can achieve a reduction in dimensionality of the problem (number of parameters smaller than state space). In this way, the function generalises between states, as the update of one state impacts the value of another.\\
+
+Function approximation techniques are applicable to partially observable problems, in which the full state space is not available to the agent. A function approximation scheme which is ignores certain aspects of the space behaves just as if those aspects are unobservable.
+
+\subsection{Value-function Approximation}
+Many techniques from supervised learning are applicable to learning value functions from experience, but not all are equipped to deal with the non-stationarity that often occurs in RL. In RL it is also important to be able to learn online.\\
+
+\subsection{The Prediction Objective ($\VE{}$)}
+Define a state distribution $\mu(s) \geq 0$, $\sum_s \mu(s) = 1$ that represents how much we care about each state $s$. Given an estimator $\hat{v}(s, \vec{w})$ of $v_\pi(s)$, parameterised by $\vec{w}$, we define our objective function as the \emph{Mean Squared Value Error}
+\begin{equation}
+    \VE{} \doteq \sum_{s \in \S{}} \mu(s) \left[ v_\pi(s) - \hat{v}(s, \vec{w})\right]^2.
+\end{equation}\\
+
+Often we choose $\mu(s)$ to be the fraction of time spent in $s$. Under on-policy training this is referred to as the \emph{on-policy distribution}. In continuing tasks, this is the stationary distribution under $\pi$.\\
+
+At this stage it is not clear that we have chosen the correct (or even a good) objective function, since the ultimate goal is a good policy for the task. For now, will continue with $\VE{}$ nonetheless.
+
+\subsubsection*{The on-policy distribution in episodic tasks}
+In an episodic task the on-policy distribution depends on how the initial states of the episode are chosen. Let $h(s)$ be the probability that an episode begins in state $s$ and $\eta(s)$ be the expected time spent in $s$ per episode. Note that you can either start in $s$ or transition there from $\bar{s}$, so
+\[
+    \eta(s) = h(s) + \sum_{\bar{s}} \eta(\bar{s}) \sum_a \pi(a \vert{} \bar{s}) p(s \vert{} \bar{s}, a) \quad \forall s \in \S{}.
+\]
+One can solve this system for $\eta$, then take the on-policy distribution as 
+\[
+    \mu(s) = \frac{\eta(s)}{\sum_{s'}\eta(s')} \quad \forall s \in \S{}.
+\]
+This is the natural choice without discounting. With discounting we consider it a form of termination and include a factor of $\gamma$ in the second term of the recurrence relation above.
+
+\subsection{Stochastic-gradient and Semi-gradient Methods}
+\subsubsection*{(Stochastic) Gradient Descent}
+We assume that states appear in examples with the same distribution $\mu(s)$, in which case a good strategy is to minimise our loss function on observed examples. \emph{Stochastic gradient-descent} moves the weights in the direction of decreasing $\VE{}$:
+\begin{align}
+    \vec{w}_{t+1} &=  \vec{w}_t - \frac12 \alpha \grad_{\vec{w}} \left[v_\pi(S_t) - \hat{v}(S_t, \vec{w})\right]^2 \\
+                  &= \vec{w}_t + \alpha \left[ v_\pi(S_t) - \hat{v}(S_t, \vec{w})\right] \grad_{\vec{w}} \hat{v}(S_t, \vec{w}).
+\end{align}
+Of course, we might not know the true value function exactly, we will likely only have access to some approximation of it $U_t$, possibly corrupted by noise or got from bootstrapping with our latest estimate. In these cases we cannot perform the above computation, but we can still make the general SGD update
+\begin{equation}
+    \vec{w}_{t+1} = \vec{w}_t + \alpha \left[ U_t - \hat{v}(S_t, \vec{w})\right] \grad_{\vec{w}} \hat{v}(S_t, \vec{w})
+\end{equation}
+If $U_t$ is an unbiased estimate of the state value for each $t$, then the sequence $\vec{w}_t$ is guaranteed to converge to a local optimum under the usual stochastic approximation conditions for decreasing $\alpha$.\\
+
+The Monte Carlo target $U_t = G_t$ is an unbiased estimator, so locally optimal convergence is guaranteed in this case. Algorithm is given below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/gradient_monte_carlo.png}\\
+
+\subsubsection*{Semi-Gradient Descent}
+We don't get the same convergence guarantees if we use bootstrapping estimates of the value function in our update target, for instance if we had used the TD(0) update $U_t = R_{t+1} + \gamma \hat{v}(S_{t+1}, \vec{w})$. This is because the target now depends on the parameters $\vec{w}$, so the gradient is not exactly the gradient of our loss function -- it only takes into account the change on our estimate with respect to $\vec{w}$. For this reason we call updates such as this \emph{semi-gradient methods}.\\
+
+Semi-gradient methods are often preferable to pure gradient methods since they can offer much faster learning, in spite of not giving the same convergence guarantees. A prototypical choice is the TD(0) update, an algorithm for which is given in the box below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/semi_gradient_td0.png}\\
+
+\subsubsection*{State Aggregation}
+\emph{State aggregation} is a simple form of generalising in which we group together states and fix them to have the same estimated value. 
+
+\subsection{Linear Methods}
+As always, linear methods of function approximation are an important special case
+\begin{equation}
+    \hat{v}(s, \vec{w}) = \vec{w}^\top \vec{x}(s)
+\end{equation}
+where $\vec{x}(s)$ are feature vectors, vectors of functions (features) $x_i: \S{} \to \mathbb{R}$. The SGD update for the linear model is
+\begin{equation}
+    \vec{w}_{t+1} = \vec{w}_t + \alpha \left[ U_t - \hat{v}(S_t, \vec{w})\right] \vec{x}(s).
+\end{equation}
+Naturally, the linear case is the most studied and the majority of convergence results for learning systems are for this case (or simpler). In particular, there is the benefit that there is a unique global optimum for our loss function (in the non-degenerate case).
+
+\subsubsection*{Convergence of Linear TD(0)}
+The semi-gradient TD(0) algorithm is known to converge under linear function approximation. The point converged to is not the global optimum, but a point near the local optimum. We consider this case in more detail. First write $\vec{x}_t = \vec{x}(S_t)$ then rearrange the update
+\begin{align}
+    \vec{w}_{t+1} &= \vec{w}_t + \alpha \left(R_{t+1} + \gamma \vec{w}_t^\top \vec{x}_{t+1} - \vec{w}_{t}^\top \vec{x}_t\right)\vec{x}_t \\
+                  &= \vec{w}_t + \alpha \left(R_{t+1}\vec{x}_t - \vec{x}_t(\vec{x}_t -  \gamma\vec{x}_{t+1})^\top\vec{w}_t\right).
+\end{align}
+Now note that we can write
+\[
+    \E{}[\vec{w}_{t+1} \vert{} \vec{w}_t] = \vec{w}_t + \alpha (\vec{b} - \mathrm{A}\vec{w}_t)
+\]
+where $\vec{b} = \E{}[R_{t+1}\vec{x}_t]$ and $\mathrm{A} = \E{}\left[\vec{x}_t(\vec{x}_t - \gamma\vec{x}_{t+1})^\top\right]$. It's clear now that in a steady state we must have (can be shown that $\mathrm{A}$ positive definite and so invertible)
+\[
+    \vec{w}_{\text{TD}} = \mathrm{A}^{-1}\vec{b}.
+\]
+We call this point the \emph{TD fixed point}, linear semi-gradient TD(0) converges to this point. (In the notes there is a box with some details.)\\
+
+At the TD fixed point (in the continuing case) it has been proven that $\VE$ is within a bounded expansion of the lowest possible error
+\begin{equation}
+    \VE(\vec{w}_{\text{TD}}) \leq \frac{1}{1 - \gamma} \min_{\vec{w}} \VE(\vec{w}).
+\end{equation}
+It is often the case that $\gamma$ is close to 1, so this region can be quite large. The TD method jas substantial loss in asymptotic performance. Regardless of this, it still has much lower variance than MC methods and can thus be faster. The desired update method will depend on the task at hand.\\
+
+\subsubsection*{Other Linear Updates}
+Linear semi-gradient DP $U_t = \sum_a \pi(a \vert{} S_t) \sum_{s', r} p(s', r \vert{} S_t, a) [r + \gamma \hat{v}(s', \vec{w}_t)]$ with updates according to the on-policy distribution also converged to the TD fixed point. There are convergence results for other step methods we have considered too. Critical to all of these is that updates are taken according to the on-policy distribution. For other update distributions, bootstrapping methods can diverge to infinity. $n$-step semi-gradient TD is given in the box below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/semi_gradient_tdn.png}\\
+
+
+\subsection{Feature Construction for Linear Methods}
+Discussed in this section
+\begin{itemize}
+    \item Polynomial Basis
+    \item Fourier Basis
+    \item One could use other orthogonal function bases but they are yet to see application in RL.
+    \item Radial Basis Functions. (Offer little advantage over coarse coding with circles, but greatly increases computational complexity)
+\end{itemize}
+
+\setcounter{subsubsection}{2}
+\subsubsection{Coarse Coding}
+\subsubsection{Tile Coding}
+
+
+\subsection{Selecting Step-Size Parameters Manually}
+
+
+\subsection{Nonlinear Function Approximation: Artificial Neural Networks}
+These of course see a lot of application in RL, especially with deep learning. There are some good review articles on the web.
+
+\section{Least-Squares TD}
+
+
+
+
+
+
+
+
+
+
+

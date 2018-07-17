@@ -228,9 +228,9 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    policy_eval_iter = 5000
-    n_updates_per_task = 2 * 10 ** 5
-    n_states = 10000
+    n_states = 1000
+    n_updates_per_task = 20 * n_states
+    policy_eval_iter = n_updates_per_task / 40
     n_iters = 200
     branching_factor = 1
 
