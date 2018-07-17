@@ -105,24 +105,72 @@ Discussed in this section
 
 \setcounter{subsubsection}{2}
 \subsubsection{Coarse Coding}
-\subsubsection{Tile Coding}
+One way of promoting generalisation between states is to cover the state-space in overlapping regions, with each region representing a feature. If the state is being considered, then all regions that contain this state will be activated. The amount of overlap of the receptive fields (the states which can activate a feature) dictates the breadth of generalisation.
 
+
+\subsubsection{Tile Coding}
+A \emph{tiling} of a continuous state space is form of coarse-coding that creates a partition of the state space (all of the state space is covered but elements of the tiling do not overlap). We call a sub-region of a tiling a \emph{tile}. One might introduce multiple overlapping tilings to incorporate generalisation.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/tile_coding.png}\\
+
+An advantage of tilings is that, because each tiling forms a partition, the total number of features active at any one time is just the total number of tilings used. So $\alpha = \frac{1}{kn}$, where $n$ is the number of tilings, results in $k$-trial learning. That is, on average the learning asymptotes after $k$ presentations of each state (assuming all updates use the same, constant target).\\
+
+Tile coding is computationally efficient and may be the most practical feature representation for modern sequential digital computers.\\
+
+A useful trick for reducing memory requirements is \emph{hashing}. One can essentially hash the state space, then tile the hashed values. This means that each tile in the hashed space will represent (multiple) pseudo-randomly distributed tiles in the original space. Since only a small proportion of the state space needs to have high resolution value estimates, this can be a good way to reduce memory with little loss in performance.
 
 \subsection{Selecting Step-Size Parameters Manually}
+In the tabular case, taking $\alpha = \frac1\tau$ will mean that the estimate for a state will approach the mean of its targets, with the most recent targets having the greatest effect, in about $\tau$ experiences.\\
 
+With function approximation, there is not a clear notion of the number of visits to a state because of continuous degrees of generalisation. However, a sensible consideration for learning from $\tau$ presentations is 
+\begin{equation}
+    \alpha = \frac{1}{\tau \E{}[\vec{x}^\top\vec{x}]}.
+\end{equation}
 
 \subsection{Nonlinear Function Approximation: Artificial Neural Networks}
 These of course see a lot of application in RL, especially with deep learning. There are some good review articles on the web.
 
-\section{Least-Squares TD}
+\subsection{Least-Squares TD}
+We saw earlier that TD(0) with linear function approximation converges to the TD fixed point 
+\[
+    \vec{w}_{\text{TD}} = \mathrm{A}^{-1}\vec{b},
+\]
+where $\vec{b} = \E{}[R_{t+1}\vec{x}_t]$ and $\mathrm{A} = \E{}\left[\vec{x}_t(\vec{x}_t - \gamma\vec{x}_{t+1})^\top\right]$. Previously we computed the solution iteratively, but this is a waste of data! We could compute the MLE of $\mathrm{A}$ and $\vec{b}$ and then use those. This is the \emph{Least-Squares TD Algorithm}, it uses the estimators
+\begin{equation}
+    \hat{\mathrm{A}}_t = \sum_{k=0}^{t-1} x_k ( x_k - \gamma x_{k+1})^\top + \epsilon \mathrm{I} \quad \mathrm{and} \quad \hat{\vec{b}}_t = \sum_{k=0}^{t-1} R_{t+1} x_k 
+\end{equation}
+where we introduce $\epsilon > 0$ to ensure that the sequence of $\hat{\mathrm{A}}_t$ are each invertible. (These are estimates of $t\mathrm{A}$ and $t\vec{b}$ but the $t$ cancel out.)\\
+
+This is the most data efficient form of TD(0), but it is also more computationally intensive. Implementing incrementally and with tricks to do the matrix inverse (because of the particular form of $\mathrm{A}$ as sum of outer products), one can do this in $O(d^2)$ computations, where $d$ is the number of parameters/features (note that this is independent of $t$). (For comparison, the semi-gradient TD(0) method needs $O(d)$ computations.) The formula for $\mathrm{A}$ is 
+\begin{align}
+    \hat{\mathrm{A}}_t &= \left(\hat{\mathrm{A}}_{t-1} + x_t ( x_t - \gamma x_{t+1})^\top\right)^{-1} \\ 
+                      &= \hat{\mathrm{A}}_{t-1}^{-1} - \frac{\hat{\mathrm{A}}_{t-1}^{-1} x_t( x_t - \gamma x_{t+1})^\top \hat{\mathrm{A}}_{t-1}^{-1}}{1 + x_t ( x_t - \gamma x_{t+1})^\top \hat{\mathrm{A}}_{t-1}^{-1} x_t}
+\end{align}
+To store $\hat{A}_{t-1}$ LSTD also needs $O(d^2)$ memory. LSTD has no step-size parameter, which means that it never forgets -- this can be a blessing or a curse depending on the application. The choice between LSTD and semi-gradient TD will depend on the application, for instance the computation available and the importance of learning quickly. Pseudocode for LSTD is given below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/lstd.png}\\
 
 
+\subsection{Memory-based Function Approximation}
+As an alternative to the parametric approaches discussed above, we might instead store all the training examples and execute an algorithm on the whole dataset when required, such as LOESS or nearest neighbour averaging. This approach is sometimes called \emph{lazy learning}. The methods that go with this are non-parametric function approximation schemes. One can often evaluate the function approximation locally in the neighbourhood of the current state, which helps with the curse of dimensionality.
 
+\subsection{Kernel-based Function Approximation}
+Using kernels to define similarities between states for generalisation, e.g. kernel regression for state values.
 
+\subsection{Looking Deeper at On-policy Learning: Interest and Emphasis}
+Sometimes we are not equally interested in each state, so limited resources can be better spent than to treat every state equally. For instance, in discounted episodic problems we might be more interested in starting states because later rewards are discounted. \\
 
+Introduce the scalar random variable $I_t \geq 0 $ called $interest$, the degree of interest we have in accurately valuing the state at time $t$. If we don't cared al all about the state then $I_t = 0$, if we fully care then it might be 1 (but it is formally allowed to take any non-negative value). The interest can be set in any causal way. The distribution in our loss function $\VE$ is then defined as the distribution of states encountered when following the target policy, weighted by the interest.\\
 
-
-
+We also introduce the scalar random variable $M_t \geq 0$, called the \emph{emphasis}. The emphasis multiplies the learning update at each time-step. For general $n$-step learning
+\begin{equation}
+    \vec{w}_{t+n} = \vec{w}_{t + n - 1} + \alpha M_t [G_{t:t+n} - \hat{v}(S_t, \vec{w}_{t+n-1})] \grad_{\vec{w}} \hat{v}(S_t, \vec{w}_{t+n-1}) \quad 0 \leq t < T,
+\end{equation}
+with the emphasis defined recursively as
+\begin{equation}
+    M_t = I_t + \gamma^n M_{t-n}
+\end{equation}
+with $M_t = 0$ $\forall t < 0$.
 
 
 
