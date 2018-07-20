@@ -1,0 +1,101 @@
+\section{On-policy Control with Approximation}
+We consider attempts to solve the control problem using parametrised function approximation to estimate action-values. We consider only the on-policy case for now.
+
+\subsection{Episodic Semi-gradient Control}
+Extension of the semi-gradient update rules to action-values is straightforward
+\begin{equation}
+    \vec{w}_{t+1} = \vec{w}_t + \alpha \left[ U_t - \hat{q}(S_t, A_t, \vec{w}_t) \right] \grad_{\vec{w}_t} \hat{q}(S_t, A_t, \vec{w}_t)
+\end{equation}
+where $U_t$ is the update target at time $t$. For example, one-step Sarsa has the update target is
+\[
+    U_t = R_{t+1} + \gamma \hat{q}(S_{t+1}, A_{t+1}, \vec{w}_t).
+\]
+We call this method \emph{episodic semi-gradient one-step Sarsa}. For a constant policy, this method converges in the same with as TD(0), with a similar kind of error bound.\\
+
+In order to form control methods, we must couple the prediction ideas developed in the previous chapter with methods for policy improvement. Policy improvement methods for continuous actions or actions from large discrete spaces are an active area of research, with no clear resolution. For actions drawn from smaller discrete sets, we can use the same idea as we have before, which is to compute action values and then take an $\varepsilon$-greedy action selection. Episodic semi-gradient sarsa can be used to estimate the optimal action-values as in the box below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/episodic_semi_gradient_sarsa.png}\\
+
+\subsection{Semi-gradient $n$-step Sarsa}
+We can use an $n$-step version of the episodic Sarsa that we defined above by incorporating the bootstrapped $n$-step return 
+\begin{equation}
+    G_{t:t+n} \doteq \sum_{i=1}^{n-1} \gamma^i R_{i+1} + \gamma^n \hat{q}(S_{t+n}, A_{t+n}, W_{t+n-1})
+\end{equation}
+where $G_{t:t+n} = G_{t}$ if $t + n \geq T$, as usual. This update target is used in the pseudocode in the box below. As we have seen before, performance is generally best with amn intermediate value of $n$. \\
+
+\includegraphics[width=\textwidth]{\NotesImages/n_step_episodic_semi_gradient_sarsa.png}\\
+
+
+\subsection{Average Reward: A New Problem Setting for Continuing Tasks}
+We introduce a third classical setting for formulating the goal in Markov decision problems (MDPs) (to go along with episodic and continuing). This new setting is called the \emph{average reward setting}. This setting applies to continuing problems with no start or end state, but also no discounting. (Later we will see that the lack of a start state introduces a symmetry that makes discounting with function approximation pointless.)\\
+
+In the average reward setting, the ordering of policies is (most often) defined with respect to the \emph{average reward}  while following the policy
+
+\begin{align}
+    r(\pi) &\doteq \lim_{h\to\infty} \frac1h \sum_{t=1}^{h} \E{}[R_{t} \vert{} S_0, A_{0:t-1} \sim \pi]\\
+             &= \lim_{t\to\infty} \E{}[R_{t} \vert{} S_0, A_{0:t-1} \sim \pi] \\
+             &= \sum_s \mu_\pi(s) \sum_a \pi(a \vert{} s) \sum_{s', r} p(s', r \vert{} s, a) r.
+\end{align}
+
+We will consider policies that attain the maximal value of $r(\pi)$ to be optimal (though there are apparently some subtly distinctions here that are not gone into).\\
+
+The distribution $\mu_\pi(s)$ is the steady-state distribution defined by
+\begin{equation}
+    \mu_\pi(s) \doteq \lim_{t\to \infty} \P{} (S_t = s \vert{} A_{0:t-1} \sim \pi)
+\end{equation}
+which we assume to exist for any $\pi$ and to be independent of the starting state $S_0$. This assumption is known as \emph{ergodicity}, and it means that the long run expectation of being in a state depends only on the policy and MDP transition probabilities -- not on the start state. The steady-state distribution has the property that it is invariant under actions taken by $\pi$, in the sense that the following holds
+\[
+    \sum_s \mu_\pi(s) \sum_a \pi(a \vert{} s) p(s' \vert{} s, a) = \mu_\pi(s').
+\]\\
+
+In the average-reward setting we define returns in terms of the difference between the reward and the expected reward for the policy
+\begin{equation}
+    G_t \doteq \sum_{i \geq t} \left(R_{i+1} - r(\pi)\right)
+\end{equation}
+we call this quantity the \emph{differential return} and the corresponding value functions (defined in the same way, just with this return instead) \emph{differential value functions}. These new value functions also have Bellman equations:
+
+\begin{align}
+    v_\pi(s) &= \sum_a \pi(a \vert{} s) \sum_{s', r} p(s', r \vert{} s, a) \left[ r - r(\pi) + v_\pi(s')\right] \\
+    q_\pi(s, a) &= \sum_{s', r} p(s', r \vert{} s, a) \left[ r - r(\pi) + \sum_{a'} \pi(a' \vert{} s') q_\pi(s', a')\right] \\
+    v_*(s) &= \max_a \sum_{s', r} p(s', r \vert{} s, a) \left[ r - r(\pi) + v_*(s')\right] \\
+    q_\pi(s, a) &= \sum_{s', r} p(s', r \vert{} s, a) \left[ r - r(\pi) + \max_{a'} q_*(s', a')\right].
+\end{align}
+We also have differential forms of the TD errors, where $\bar{R}_t$ is the estimate of $r(\pi)$ at $t$,
+\begin{align}
+    \delta_t &\doteq R_{t+1} - \bar{R}_{t+1} + \hat{v}(S_{t+1}, \vec{w}_t) - \hat{v}(S_t, \vec{w}_t)\\
+    \delta_t &\doteq R_{t+1} - \bar{R}_{t+1} + \hat{q}(S_{t+1}, A_{t+1}, \vec{w}_t) - \hat{q}(S_t, A_t, \vec{w}_t).
+\end{align}\\
+
+Many of the previous algorithms and theoretical results carry over to this new setting without change. For instance, the update for the semi-gradient Sarsa is defined in the same way just with the new TD error, corresponding pseudocode given in the box below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/differential_semi_gradient_sarsa.png}\\
+
+\subsection{Deprecating the Discounted Setting}
+Suppose we want to optimise the discounted value function $v_\pi^\gamma(s)$ over the on-policy distribution, we would choose an objective $J(\pi)$ with
+\begin{align}
+    J(\pi) &\doteq \sum_s \mu_\pi(s) v_\pi^\gamma(s) \\
+           &= \sum_s \mu_\pi(s) \sum_a \pi(a \vert{} s) \sum_{s', r} p(s', r \vert{} s, a) \left[ r + \gamma v_\pi^\gamma(s')\right] \\
+           &= r(\pi) + \sum_s \mu_\pi(s) \sum_a \pi(a \vert{} s) \sum_{s', r} p(s', r \vert{}  s, a) \gamma v_\pi^\gamma(s') \\
+           &= r(\pi) + \gamma \sum_{s'} v_\pi^\gamma(s') \sum_{s} \mu_\pi(s) \sum_a \pi(a \vert{} s)p(s', \vert{}  s, a) \\
+           &= r(\pi) + \gamma \sum_{s'} v_\pi^\gamma(s') \mu_\pi(s') \\
+           &= r(\pi) + \gamma J(\pi) \\
+           &\vdotswithin{=} \\
+           &= \frac{1}{1 - \gamma} r(\pi)
+\end{align}
+so we may as well have optimised for the \emph{undiscounted} average reward.\\
+
+The root cause (note: why \emph{root} cause?) of the difficulties with the discounted control setting is that when we introduce function approximation we lose the policy improvement theorem. This is because when we change the discounted value of one state, we are not guaranteed to have improved the policy in any useful sense (e.g. generalisation could ruin the policy elsewhere). This is an area of open research.
+
+\subsection{Differential Semi-gradient $n$-step Sarsa}
+We generalise $n$-step bootstrapping by introducing an $n$-step version of the TD error  in this new setting. In order to do that, we first introduce the differential $n$-step return using function approximation
+\begin{equation}
+    G_{t:t+n} \doteq \sum_{i=t}^{n-1} \left( R_{i +1} - \bar{R}_{i+1} \right) + \hat{q}(S_{t+n}, A_{t+n}, \vec{w}_{t+n-1})
+\end{equation}
+with $G_{t:t+n} = G_t$ if $t+n \geq T$ as usual and where $\bar{R}_i$ are the estimates of $\bar{R}$. The $n$-step TD error is then defined as before just with the new $n$-step return
+\[
+    \delta_t \doteq G_{t:t+n} - \hat{q}(S_t, A_t, \vec{w}_t).
+\]
+Pseudocode for the use of this return in the Sarsa framework is given in the box below. Note that $\bar{R}$ is updated using the TD error rather than the latest reward (see Exercise 10.9).\\
+
+
+\includegraphics[width=\textwidth]{\NotesImages/differential_semi_gradient_n_step_sarsa.png}\\
