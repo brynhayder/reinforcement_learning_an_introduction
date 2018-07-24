@@ -1,14 +1,83 @@
 \section{*Off-policy Methods with Approximation}
 
-\subsection{Exercise 11.}
-\subsubsection{Q}
-\subsubsection{A}
+\subsection{Exercise 11.1}
+\subsubsection*{Q}
+Convert the equation of $n$-step off-policy TD (7.9) to semi-gradient form. Give accompanying definitions of the return for both the episodic and continuing cases.
+\subsubsection*{A}
+Tabular case is 
+\[ 
+    V_{t+n}(S_t) = V_{t+n-1} + \alpha \rho_{t:t+n-1} [G_{t:t+n} - V_{t+n-1}(S_t)].
+\]
+The semi-gradient weight update is
+\[
+    \vec{w}_{t+n} = \vec{w}_{t+n-1} + \alpha \rho_{t:t+n-1}[G_{t:t+n} - \hat{v}(S_t, \vec{w}_{t+n-1})] \grad_{\vec{w}}\hat{v}(S_t, \vec{w}_{t+n-1}),
+\]
+noting the occurrence of the $n$step TD Error
+\[
+    \delta_t^n = G_{t:t+n} - \hat{v}(S_t, \vec{w}_{t+n-1}).
+\]
+We define the returns in the two cases
+\begin{description}
+    \item[episodic] $G_{t:t+n} = \sum_{i=t}^{t+n-1}\gamma_{i-t}R_{i+1} + \gamma^n \hat{v}(S_{t+n}, \vec{w}_{t+n-1})$
+    \item[continuing] $G_{t:t+n} = \sum_{i=t}^{t+n-1}(R_{i+1} - \bar{R}_i) + \hat{v}(S_{t+n}, \vec{w}_{t+n-1})$
+\end{description}
+where in each case $G_{t:h} = G_t$ if $h \geq T$.
+    
+
+\subsection{*Exercise 11.2}
+\subsubsection*{Q}
+Convert the equations of $n$-step Q$(\sigma)$ (7.11 and 7.17) to semi-gradient form. Give definitions that cover both the episodic and continuing cases.
+
+\subsubsection*{A}
+The update is 
+\[
+    \vec{w}_{t+n} = \vec{w}_{t+n-1} + \alpha [G_{t:t+n} - \hat{q}(S_t, A_t, \vec{w}_{t+n-1})] \grad_{\vec{w}} \hat{q}(S_t, A_t, \vec{w}_{t+n-1}
+\]
+with the following definitions of returns targets\\
+
+{\bfseries Episodic}\\
+\[
+    G_{t:h} = R_{t+1} + \gamma \left[\sigma_{t+1}\rho_{t+1}  + (1-\sigma_{t+1})\pi(A_{t+1} \vert{} S_{t+1})\right]\left[G_{t:h} - \hat{q}(S_t, A_t, \vec{w}_{h-1}) \right] + \gamma \bar{V}_{h-1}(S_{t+1})
+\]\\
+
+{\bfseries Continuing}\\
+\[
+    G_{t:h} = R_{t+1} - \bar{R}_t + \left[\sigma_{t+1}\rho_{t+1}  + (1-\sigma_{t+1})\pi(A_{t+1} \vert{} S_{t+1})\right]\left[G_{t:h} - \hat{q}(S_t, A_t, \vec{w}_{h-1}) \right] + \bar{V}_{h-1}(S_{t+1})
+\]\\
+
+where 
+\[
+    \bar{V}_i(s) = \sum_a \pi(a \vert{} s) \hat{q}(s, \vec{w}_i)
+\]
+and $G_{h:h} = \hat{q}_(S_h, A_h, \vec{w}_{h-1})$ if $h<T$ while if $h=T$ we have $G_{T-1:T} = R_T$ in the episodic case and $G_{T-1:T} = R_T - \bar{R}_{T-1}$ in the continuing case.\\
+
+Note that in each case the value functions are defined with respect to the relevant episodic discounted or continuing average excess return.
 
 \subsection{Exercise 11.3 (programming)}
-\subsubsection{Q}
+\subsubsection*{Q}
 Apply one-step semi-gradient Q-learning to Baird’s counterexample and show empirically that its weights diverge.
 
-\subsubsection{A}
+\subsubsection*{A}
 \ProgrammingExercise{}\\
 
 \includegraphics[width=\textwidth]{\ExerciseOutput/ex_11_3/bairds_counter_example_q_learning.png}
+
+\subsection{Exercise 11.4}
+\subsubsection*{Q}
+Prove (11.24). Hint: Write the $\bar{\mathrm{RE}}$ as an expectation over possible states s of the expectation of the squared error given that $S_t = s$. Then add and subtract the true value of state $s$ from the error (before squaring), grouping the subtracted true value with the return and the added true value with the estimated value. Then, if you expand the square, the most complex term will end up being zero, leaving you with (11.24).
+
+\subsubsection*{A}
+Define
+\[
+    \overline{\mathrm{VE}}(\vec{w}) = \E{}_{s\sim\mu}[v_\pi(s) - \hat{v}(s, \vec{w})]
+\]
+Now have the return error
+\begin{align}
+    \overline{\mathrm{RE}} &\doteq \E{}\left[ (G_t - \hat{v}(S_t, \vec{w}))^2 \right] \\
+    &= \overline{\mathrm{VE}}(\vec{w}) + \E{}\left[ (G_t - v_\pi(S_t))^2 \right] + 2 \E{}\left[ (G_t - v_\pi(S_t))[v_\pi(S_t) - \hat{v}(S_t, \vec{w})] \right].
+\end{align}
+The final term is
+\begin{align}
+    \E{}\left[ (G_t - v_\pi(S_t))[v_\pi(S_t) - \hat{v}(S_t, \vec{w})] \right] &= \E{}_{s \sim \mu}\left\{\E{}\left[ (G_t - v_\pi(s))[v_\pi(s) - \hat{v}(s, \vec{w})] \right]\vert{} s\right\}\\
+                  &= 0
+\end{align}
