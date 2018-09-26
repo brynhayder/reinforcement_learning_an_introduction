@@ -1,9 +1,9 @@
 \section{Monte-Carlo Methods}
 \subsection{Exercise 5.1}
-\subsubsection{Q}
+\subsubsection*{Q}
 Consider the diagrams on the right in Figure 5.1. Why does the estimated value function jump up for the last two rows in the rear? Why does it drop off for the whole last row on the left? Why are the frontmost values higher in the upper diagrams than in the lower?
 
-\subsubsection{A}
+\subsubsection*{A}
 \begin{itemize}
     \item Policy is to hit unless $S \geq 20$. So you run a rik of going bust if you have 12-19, but you most likely win when you stick on 20 or 21
     \item Drops off because dealer has a usable ace
@@ -11,23 +11,23 @@ Consider the diagrams on the right in Figure 5.1. Why does the estimated value f
 \end{itemize}
 
 \subsection{Exercise 5.2}
-\subsubsection{Q}
+\subsubsection*{Q}
 Suppose every-visit MC was used instead of first-visit MC on the blackjack task. Would you expect the results to be very different? Why or why not?
 
-\subsubsection{A}
+\subsubsection*{A}
 Results would be the same because this game is memoryless (cards are drawn with replacement).
 
 \subsection{Exercise 5.3}
-\subsubsection{Q}
+\subsubsection*{Q}
 What is the backup diagram for Monte Carlo estimation of $q_\pi$?
 
-\subsubsection{A}
+\subsubsection*{A}
 The same as the one shown in the book for state valus, only we have state-action pairs instead of states.
 
 \subsection{Exercise 5.4}
-\subsubsection{Q}
+\subsubsection*{Q}
 What is the equation analogous to (5.6) for \emph{action} values $Q(s, a)$ instead of state values $V(s)$, again given returns generated using $b$?
-\subsubsection{A}
+\subsubsection*{A}
 We condition on taking action $a$ in state $s$.
 \[
     q_\pi(s, a) = \Epi{}[\rho_{t+1:T-1} G_t | S_t = s, A_t = s]
@@ -39,10 +39,10 @@ with returns generated from $b$. We estimate this quantity by
 where $\mathcal{T}(s, a)$ now contains timestamps of visits to state-action pairs.
 
 \subsection{Exercise 5.5}
-\subsubsection{Q}
+\subsubsection*{Q}
 In learning curves such as those shown in Figure 5.3 error generally decreases with training, as indeed happened for the ordinary importance-sampling method. But for the weighted importance-sampling method error first increased and then decreased. Why do you think this happened?
 
-\subsubsection{A}
+\subsubsection*{A}
 When there are fewer episodes the importance sampling ratios will be zero with higher probability since the behaviour policy will stick on values smaller than 20 (since it is random). Zero happens to be close to $v_\pi(s)$.\\
 
 This effect lessens as we get more diversity in the episode trajectories.\\
@@ -50,16 +50,16 @@ This effect lessens as we get more diversity in the episode trajectories.\\
 Then after this the error reduces because the variance in the estimator reduces.
 
 \subsection{Exercise 5.6}
-\subsubsection{Q}
+\subsubsection*{Q}
 The results with Example 5.5 and shown in Figure 5.4 used a first-visit MC method. Suppose that instead an every-visit MC method was used on the same problem. Would the variance of the estimator still be infinite? Why or why not?
-\subsubsection{A}
+\subsubsection*{A}
 Yes, all terms in the sum are $\geq 0$ and there woud just be more of them.
 
 \subsection{Exercise 5.7}
-\subsubsection{Q}
+\subsubsection*{Q}
 Modify the algorithm for first-visit MC policy evaluation (Section 5.1) to use the incremental implementation for sample averages described in Section 2.4.
 
-\subsubsection{A}
+\subsubsection*{A}
 Algo is the same apart from 
 \begin{itemize}
     \item Initialise $V(s) = 0 \quad \forall s \in S$
@@ -68,10 +68,10 @@ Algo is the same apart from
 \end{itemize}
 
 \subsection{Exercise 5.8}
-\subsubsection{Q}
+\subsubsection*{Q}
 Derive the weighted-average update rule (5.8) from (5.7). Follow the pattern of the derivation of the unweighted rule (2.3).
 
-\subsubsection{A}
+\subsubsection*{A}
 Have $C_0 = 0$, $C_n = \sum_{k = 1}^n W_k$ and 
 \[
     V_{n+1} = \frac{\sum_{k = 1}^n W_kG_k}{C_n}.
@@ -88,27 +88,27 @@ Finally
 \]
 
 \subsection{Exercise 5.9}
-\subsubsection{Q}
+\subsubsection*{Q}
 In the boxed algorithm for off-policy MC control, you may have been expecting the W update to have involved the importance-sampling ratio $\pi(A_t|S_t)$, but instead it involves $1/b(A_t|S_t)$. Why is this nevertheless correct?
 
-\subsubsection{A}
+\subsubsection*{A}
 $\pi$ is greedy, so 
 \[
     \pi(a | s) = \mathds{1}\{a = \argmax_{a'} Q(s, a')\}.
 \]
 
 \subsection{Exercise 5.10 (programming): Racetrack}
-\subsubsection{Q}
+\subsubsection*{Q}
 Consider driving a race car around a turn like those shown in Figure 5.5. You want to go as fast as possible, but not so fast as to run off the track. In our simplified racetrack, the car is at one of a discrete set of grid positions, the cells in the diagram. The velocity is also discrete, a number of grid cells moved horizontally and vertically per time step. The actions are increments to the velocity components. Each may be changed by +1, -1, or 0 in each step, for a total of nine ($3 \times 3$) actions. Both velocity components are restricted to be nonnegative and less than 5, and they cannot both be zero except at the starting line. Each episode begins in one of the randomly selected start states with both velocity components zero and ends when the car crosses the finish line. The rewards are -1 for each step until the car crosses the finish line. If the car hits the track boundary, it is moved back to a random position on the starting line, both velocity components are reduced to zero, and the episode continues. Before updating the car’s location at each time step, check to see if the projected path of the car intersects the track boundary. If it intersects the finish line, the episode ends; if it intersects anywhere else, the car is considered to have hit the track boundary and is sent back to the starting line. To make the task more challenging, with probability 0.1 at each time step the velocity increments are both zero, independently of the intended increments. Apply a Monte Carlo control method to this task to compute the optimal policy from each starting state. Exhibit several trajectories following the optimal policy (but turn the noise off for these trajectories).
-\subsubsection{A}
+\subsubsection*{A}
 \ProgrammingExercise\\
 \includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_5_10/track_1_trajectories.eps}
 
 \includegraphics[width=\textwidth]{\ProjectDir/data/exercise_output/ex_5_10/track_2_sample_trajectory.eps}
 
 \subsection{*Exercise 5.11}
-\subsubsection{Q}
+\subsubsection*{Q}
 Modify the algorithm for off-policy Monte Carlo control (page 110) to use the idea of the truncated weighted-average estimator (5.10). Note that you will first need to convert this equation to action values.
 
-\subsubsection{A}
+\subsubsection*{A}
 ... 

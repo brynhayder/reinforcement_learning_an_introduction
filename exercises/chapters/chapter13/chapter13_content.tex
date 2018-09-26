@@ -1,0 +1,123 @@
+\section{Policy Gradient Methods}
+
+\subsection{Exercise 13.1}
+\subsubsection*{Q}
+Use your knowledge of the gridworld and its dynamics to determine an \emph{exact} symbolic expression for the optimal probability of selecting the \texttt{right} action in Example 13.1.
+
+\subsubsection*{A}
+Define $p = \P{}(\texttt{right})$, so $\P{}(\texttt{left}) = 1-p$. Then, labelling the states 1-3 from right to left (value of terminal state is set to 0), the Bellman equations reduce to
+\begin{align*}
+    v_\pi(1) &= p v_\pi(2) - 1\\
+    v_\pi(2) &= pv_\pi(1) - 1 + (1-p)v_\pi(3) \\
+    v_\pi(3) &= (1-p)v_\pi(2) - 1.
+\end{align*}
+Setting $f(p)$ for the value of the initial state and solving this system gives
+\[
+    f(p) = \frac{p^2 - 2p + 2}{p(1-p)}
+\]
+which attains its maximum at $p = \sqrt{2}(\sqrt{2} - 1)$. (Note that $f$ is defined only on the open interval $(0, 1)$, the performance becomes infinitely bad as $p \to 0, 1$.)
+
+
+\subsection{*Exercise 13.2}
+\subsubsection*{Q}
+Generalize the box on page 199, the policy gradient theorem (13.5), the proof of the policy gradient theorem (page 325), and the steps leading to the REINFORCE update equation (13.8), so that (13.8) ends up with a factor of $\gamma^t$ and thus aligns with the general algorithm given in the pseudocode.
+
+\subsubsection*{A}
+\begin{itemize}
+    \item Generalisation the recursion equation that governs expected time in each state:
+    \begin{align*}
+        \eta(s) &= h(s) + \gamma \sum_{\bar{s}}\eta(\bar{s}) \sum_a \pi(a \vert{} \bar{s}) p(s \vert{} \bar{s}, a)\\
+                &= h(s) + \gamma \sum_{\bar{s}, a}\pi(a \vert{} \bar{s}) p(s \vert{} \bar{s}, a) + \gamma ^2 \sum_{\bar{s}, a}\pi(a \vert{} \bar{s}) p(s \vert{} \bar{s}, a) \sum_{x, a'}\pi(a' \vert{} x) p(\bar{s} \vert{} x, a) + \cdots
+    \end{align*}
+    This just changes the solution for $\eta(s)$, we still have $\mu(s) = \frac{\eta(s)}{\sum_{s'} \eta(s')}$.
+    \item The generalisation of the proof of the policy gradient theorem comes with the use of the Bellman  equation unfolding for the value function. We therefore arrive at the following gradient:
+    \[
+        \grad_{\vec{\theta}} v_\pi(s) = \sum_{x \in \S{}}\sum_{k = 0}^\infty \P{}(s \to x, k, \pi)\gamma^k\sum_a \grad_{\vec{\theta}} \pi(a \vert{} x) q_\pi(x, a),
+    \]
+    and the theorem follows as before.
+    \item To full incorporate discounting, we need to view it as a form of termination. The policy gradient theorem becomes
+    \[
+        \grad_{\vec{\theta}} J(\vec{\theta}) = \Epi[\gamma_t \sum_a q_\pi(S_t, a) \grad_{\vec{\theta}} \pi(a \vert{} S_t, \vec{\theta})].
+    \]
+    The factor of $\gamma^t$ then follows through when we apply SGD. (It's possible to do some rearranging to prove this relation, but it is not done in the book --  a little unclear!)
+\end{itemize}
+
+\subsection{Exercise 13.3}
+\subsubsection*{Q}
+In Section 13.1 we considered policy parameterizations using the soft-max in action preferences (13.2) with linear action preferences (13.3). For this parameterization, prove that the eligibility vector is
+\[
+    \grad \log \pi(a \vert{} s, \vec{\theta}) = \vec{x}(s, a) - \sum_b \pi(b \vert{} s, \vec{\theta})\vec{x}(s, b)
+\]
+using the definitions and elementary calculus.
+
+\subsubsection*{A}
+Have softmax policy
+\[
+    \pi(a \vert{} s, \vec{\theta}) = \frac{\exp(h(s, a, \vec{\theta}))}{\sum_b \exp(h(s, a, \vec{\theta}))}
+\]
+with linear action preferences 
+\[
+    h(s, a, \vec{\theta}) = \vec{\theta}^\top \vec{x}(s, a).
+\]
+The following is then clear:
+\begin{align*}
+    \grad_{\vec{\theta}} \log(\pi) &= \vec{x}(s, a) - \frac{\sum_b \vec{x}(s, b) \exp(\vec{\theta}^\top \vec{x}(s, b))}{\sum_b \exp(\vec{\theta}^\top \vec{x}(s, b))} \\
+                                   &= \vec{x}(s, a) - \sum_b \vec{x}(s, b) \pi(b \vert{} s, \vec{\theta}).
+\end{align*}
+
+\subsection{Exercise 13.4}
+\subsubsection*{Q}
+Show that for the gaussian policy parameterization (13.19) the eligibility vector has the following two parts:
+
+\begin{align*}
+    \grad \log \pi(a \vert{} s, \vec{\theta}_\mu) &= \frac{\grad \pi(a \vert{} s, \vec{\theta}_\mu)}{\pi(a \vert{} s, \vec{\theta})} = \frac{1}{\sigma(s, \vec{\theta})^2} (a - \mu(s, \vec{\theta}))\vec{x}_\mu(s)\text{, and}\\
+    \grad \log \pi(a \vert{} s, \vec{\theta}_\sigma) &= \frac{\grad \pi(a \vert{} s, \vec{\theta}_\sigma)}{\pi(a \vert{} s, \vec{\theta})} = \left( \frac{(a - \mu(s, \vec{\theta}))^2}{\sigma(s, \vec{\theta})^2} - 1 \right) \vec{x}_\sigma(s)
+\end{align*}
+
+\subsubsection*{A}
+Gaussian policy
+\[
+    \pi(a \vert{} s, \vec{\theta}) = \frac{1}{\sigma(s, \vec{\theta}) \sqrt{2 \pi}} \exp\left( - \frac{(a - \mu(s, \vec{\theta}))^2}{2 \sigma(s, \vec{\theta})^2} \right)
+\]
+with the models $\mu(s, \vec{\theta}_\mu) = \vec{\theta}_\mu^\top\vec{x}_\mu(s)$ and $\sigma(s, \vec{\theta}_\sigma) = \exp(\vec{\theta}_\sigma^\top\vec{x}_\sigma(s))$. First,
+\[
+    \log \pi(a \vert{} s, \vec{\theta}) = - \log \sqrt{2 \pi} - \log \sigma - \frac{(a - \mu)^2}{2\sigma^2}
+\]
+so we have 
+\[
+    \grad_{\vec{\theta}_\mu}\log\pi(a \vert{}s, \theta) = \frac{a - \mu}{\sigma^2}\grad_{\vec{\theta}_\mu}\mu(s, \vec{\theta}_\mu) = \frac{a - \mu}{\sigma^2} \vec{x}_\mu(s)
+\]
+and
+\[
+    \grad_{\vec{\theta}_\sigma}\log\pi(a \vert{} s, \vec{\theta}) = - \frac{\grad_{\vec{\theta}_\sigma} \sigma}{\sigma} + \frac{(a - \mu)^2}{\sigma^2}\grad_{\vec{\theta}_\sigma}\sigma = \left( \frac{(a - \mu)^2}{\sigma^2} - 1 \right)\vec{x}_\sigma(s) 
+\]
+because $\grad_{\vec{\theta}_\sigma}\sigma = \vec{x}_\sigma(s) \sigma$.
+
+
+\subsection{Exercise 13.5}
+\subsubsection*{Q}
+A \emph{Bernoulli-logistic unit} is a stochastic neuron-like unit used in some ANNs (Section 9.6). Its input at time $t$ is a feature vector $\vec{x}(S_t)$; its output, $A_t$, is a random variable having two values, 0 and 1, with $\text{Pr}\{A_t = 1\} = P_t$ and $\text{Pr}\{A_t = 0\} = 1- P_t$ (the Bernoulli distribution). Let $h(s, 0, \vec{\theta})$ and $h(s, 1, \vec{\theta})$ be the preferences in state $s$ for the unit’s two actions given policy parameter $\vec{\theta}$. Assume that the difference between the action preferences is given by a weighted sum of the unit’s input vector, that is, assume
+that $h(s, 1, \vec{\theta}) - h(s, 0, \vec{\theta}) = \vec{\theta}^\top \vec{x}(s)$, where $\vec{\theta}$ is the unit’s weight vector.
+
+\begin{enumerate}[(a)]
+    \item Show that if the exponential soft-max distribution (13.2) is used to convert action preferences to policies, then $P_t = \pi(1 \vert{}S_t, \vec{\theta}_t) = 1/(1 + \exp(-\vec{\theta}_t^\top\vec{x}(S_t)))$(the logistic function).
+    \item What is the Monte-Carlo REINFORCE update of $\vec{\theta}_t$ to $\vec{\theta}_t$ upon receipt of return $G_t$?
+    \item Express the eligibility $\grad\log\pi(a\vert{}s,\vec{\theta})$ for a Bernoulli-logistic unit, in terms of $a$, $\vec{x}(s)$ and $\pi(a \vert{} s, \vec{\theta})$ by calculating the gradient.
+\end{enumerate}
+
+Hint: separately for each action compute the derivative of the logarithm first with respect to $P_t = \pi(1 \vert{}S_t, \vec{\theta}_t)$, combine the two results into one expression that depends on $a$ and $P_t$, and then use the chain rule, noting that the derivative of the logistic function $f(x)$ is $f(x)(1 - f(x))$.
+
+\subsubsection*{A}
+
+\begin{enumerate}[a)]
+    \item $\pi(1 \vert{} S_t, \vec{\theta}_t) = \frac{e^{h(s, 1, \vec{\theta}_t)}}{e^{h(s, 1, \vec{\theta}_t)} + e^{h(s, 0, \vec{\theta}_t)}} = \frac{1}{1 + e^{-\vec{\theta}^\top\vec{x}(s)}}$
+    \item $\vec{\theta}_{t+1} = \vec{\theta}_t + \alpha \gamma^t G_t \grad_{\vec{\theta}_t}\log\pi(a \vert{} S_t, \vec{\theta}_t)$ 
+    \item Write $\pi(a \vert{} S_t, \vec{\theta}_t) = g((-1)^a \vec{\theta}_t^\top\vec{x}(s))$ where $a \in \{ 0, 1\}$ and $g$ is the sigmoid function $g(t) = 1 / (1 + e^{-t})$. It's then quite easy to see that 
+    \[
+        \frac{\d{}}{\d{} t} \log g(t) = 1 - g(t)
+    \]
+    which leads to
+    \[
+        \grad_{\vec{\theta}} \pi(a \vert{} s, \vec{\theta}) = (-1)^a \vec{x}(s) (1 - \pi(a \vert{} s, \vec{\theta})).
+    \]
+\end{enumerate}

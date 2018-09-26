@@ -1,10 +1,10 @@
 \section{On-policy Control with Approximation}
 
 \subsection{Exercise 10.1}
-\subsubsection{Q}
+\subsubsection*{Q}
 We have not explicitly considered or given pseudocode for any Monte Carlo methods or in this chapter. What would they be like? Why is it reasonable not to give pseudocode for them? How would they perform on the Mountain Car task?
 
-\subsubsection{A}
+\subsubsection*{A}
 \begin{itemize}
     \item Monte Carlo is $n$-step Sarsa with $n \to \infty$
     \item This is same pseudocode as given, but with full episodes and $G_t$ rather than $G_{t:t+n}$.
@@ -12,36 +12,36 @@ We have not explicitly considered or given pseudocode for any Monte Carlo method
 \end{itemize}
 
 \subsection{Exercise 10.2}
-\subsubsection{Q}
+\subsubsection*{Q}
 Give pseudocode for semi-gradient one-step \emph{Expected Sarsa} for control.
 
-\subsubsection{A}
+\subsubsection*{A}
 Expected sarsa is the same but the target is 
 \[
     \sum_{k=t}^{t +n -1} \gamma^{k-t} R_{k + 1} + \sum_a \pi(a \vert{} S_{t+n}) q_{t + n -1}(S_{t+n}, a)
 \]
 
 \subsection{Exercise 10.3}
-\subsubsection{Q}
+\subsubsection*{Q}
 Why do the results shown in Figure 10.4 have higher standard errors at large $n$ than at small $n$?
-\subsubsection{A}
+\subsubsection*{A}
 The longer the step length then the greater the variance in initial runs, this is because the agent needs to wait for $n$ steps to start learning. Some initial episodes of high $n$ cases could have been very poor.
 
 \subsection{Exercise 10.4}
-\subsubsection{Q}
+\subsubsection*{Q}
 Give pseudocode for a differential version of semi-gradient Q-learning.
 
-\subsubsection{A}
+\subsubsection*{A}
 Same as others but with the target
 \[
     R_{t+1} - \bar{R}_{t+1} - \max_a \hat{q}(S_{t+1}, a, \vec{w}_t)
 \]
 
 \subsection{Exercise 10.5}
-\subsubsection{Q}
+\subsubsection*{Q}
 What equations are needed (beyond 10.10) to specify the differential version of TD(0)?
 
-\subsubsection{A}
+\subsubsection*{A}
 Just need the semi-gradient update
 \[
     \vec{w}_{t+1} = \vec{w}_{t} + \alpha \delta_t \grad_{\vec{w}_t} \hat{v}(S_t, \vec{w}_t)
@@ -52,9 +52,9 @@ where
 \]
 
 \subsection{Exercise 10.6}
-\subsubsection{Q}
+\subsubsection*{Q}
 Consider a Markov reward process consisting of a ring of three states A, B, and C, with state transitions going deterministically around the ring. A reward of 1 is received upon arrival in A and otherwise the reward is 0. What are the differential values of the three states?
-\subsubsection{A}
+\subsubsection*{A}
 The average reward is $\bar{R} = \frac13$. To calculate the differential return we have 
 \[
     V(A) = \sum_t (a_t - \bar{R})
@@ -89,7 +89,7 @@ and
 \]
 
 \subsection{Exercise 10.7}
-\subsubsection{Q}
+\subsubsection*{Q}
 Suppose there is an MDP that under any policy produces the deterministic sequence of rewards 1, 0, 1, 0, 1, 0, . . . going on forever. Technically, this is not allowed because it violates ergodicity; there is no stationary limiting distribution $\mu_\pi$ and the limit (10.7) does not exist. Nevertheless, the average reward (10.6) is well defined; What is it? Now consider two states in this MDP. From A, the reward sequence is exactly as described above, starting with a 1, whereas, from B, the reward sequence starts with a 0 and then continues with 1, 0, 1, 0, . . .. The differential return (10.9) is not well defined for this case as the limit does not exist. To repair this, one could alternately define the value of a state as
 
 \[
@@ -97,7 +97,7 @@ Suppose there is an MDP that under any policy produces the deterministic sequenc
 \]
 
 Under this definition, what are the values of states A and B?
-\subsubsection{A}
+\subsubsection*{A}
 Define
 \[
     f(h) = \frac{1}{2h} \sum_{t=0}^{2h} \mathds{1}\{t \equiv 0 \pmod 2\} = \frac{h + 1}{2h}
@@ -127,11 +127,11 @@ and
 Finally, $V(A) = \lim_{\gamma \to 1} V(A; \gamma) = \frac14$ and $V(B) = - \frac14$.
     
 \subsection{Exercise 10.8}
-\subsubsection{Q}
+\subsubsection*{Q}
 The pseudocode in the box on page 251 updates $\bar{R}_{t+1}$ using $\delta_t$ as an error rather than simply $R_{t+1} - \bar{R}_{t+1}$. Both errors work, but using $\delta_t$ is better. To see why, consider the ring MRP of three states from Exercise 10.6. The estimate of the average
 reward should tend towards its true value of $\frac13$. Suppose it was already there and was held stuck there. What would the sequence of $R_{t+1} - \bar{R}_{t+1}$ errors be? What would the sequence of $\delta_t$ errors be (using (10.10))? Which error sequence would produce a more stable estimate of the average reward if the estimate were allowed to change in response to the errors? Why?
  
-\subsubsection{A}
+\subsubsection*{A}
 $\bar{R} = \frac13$ fixed. \\
 
 The sequence of errors from $R_t - \bar{R}_t$ starting in A would be 
@@ -145,10 +145,10 @@ while the sequence of TD errors starting in A (taking differential values from E
 which is clearly of much lower variance and would therefore give more stable updates. Once $\bar{R}$ gets to the correct value it never leaves.
 
 \subsection{Exercise 10.9}
-\subsubsection{Q}
+\subsubsection*{Q}
 In the differential semi-gradient $n$-step Sarsa algorithm, the step-size parameter on the average reward, $\beta$, needs to be quite small so that $\bar{R}$ becomes a good long-term estimate of the average reward. Unfortunately, $\bar{R}$ will then be biased by its initial value for many steps, which may make learning inefficient. Alternatively, one could use a sample average of the observed rewards for $\bar{R}$ . That would initially adapt rapidly but in the long run would also adapt slowly. As the policy slowly changed, $\bar{R}$ would also change; the potential for such long-term non-stationarity makes sample-average methods ill-suited. In fact, the step-size parameter on the average reward is a perfect place to use the unbiased constant-step-size trick from Exercise 2.7. Describe the specific changes needed to the boxed algorithm for differential semi-gradient $n$-step Sarsa to use this trick.
 
-\subsubsection{A}
+\subsubsection*{A}
 We define a parameter $\beta$ and seed a sequence $u_n$ with $u_0=0$. The under the if statement where $\tau \geq 0$ we place the following:
 \begin{align*}
     u &\leftarrow u + \beta (1 - u) \\

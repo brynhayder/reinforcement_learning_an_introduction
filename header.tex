@@ -3,6 +3,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{bm}
 \usepackage{mathtools}
 \usepackage{setspace}
 \usepackage{dsfont}
@@ -11,6 +12,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=black]{hyperref}
 
+\usepackage[shortlabels]{enumitem}
+
 \setlength{\parindent}{0cm}
 
 \newcommand\Rule{\noindent\makebox[\textwidth]{\rule{\textwidth}{0.5pt}}}
@@ -18,7 +21,7 @@
 \newcommand\argmax{\operatorname*{argmax}}
 \newcommand\argmin{\operatorname*{argmin}}
 
-\renewcommand{\vec}[1]{\mathbf{#1}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
 
 \newcommand\Epi{\mathbb{E}_\pi}
 \renewcommand\P{\mathbb{P}}
@@ -28,6 +31,7 @@
 \renewcommand{\S}{\mathcal{S}}
 \newcommand{\A}{\mathcal{A}}
 \newcommand{\grad}{\nabla}
+\renewcommand{\d}{\mathrm{d}}
 
 
 \renewcommand{\familydefault}{\sfdefault}
