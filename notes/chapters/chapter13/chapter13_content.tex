@@ -1,2 +1,134 @@
 \section{Policy Gradient Methods}
 
+In this section we take an approach that is different to the action-value methods that we have considered previously. We continue the function approximation scheme, but attempt to learn a \emph{parameterised policy} $\pi(a \vert{} s, \vec{\theta})$ where $\vec{\theta} \in \R{}^{d'}$ is the policy's \emph{parameter vector}. Our methods might also learn a value function, but the policy will provide a probability distribution of possible actions without directly consulting the value function as we did previously. \\
+
+We will learn the policy parameter by \emph{policy gradient methods}. These are gradient methods based on some scalar performance measure $J(\vec{\theta})$. In particular, performance is maximised by \emph{gradient ascent} using some stochastic estimate of $J$, $\widehat{\grad J(\vec{\theta}_t)}$, whose expectation approximates $\E{}[\grad_{\vec{\theta}} J(\vec{\theta}_t)]$
+\[
+    \vec{\theta}_{t+1} = \vec{\theta} + \alpha \widehat{\grad J(\vec{\theta}_t)}.
+\]
+Methods that also learn a value function are called \emph{actor-critic} methods. Actor is in reference to the learn policy, while critic is in reference to the learned (usually state-) value function.
+
+
+\subsection{Policy Approximation and its Advantages}
+
+In policy gradient methods, the policy can be parameterised by any differentiable function of the parameter $\vec{\theta}$. We generally require $\pi \in (0, 1)$ to be defined on the open interval to ensure exploration. \\
+
+For action-spaces that are discrete and not too large, it is common to learn a preference function $h(s, a, \vec{\theta}) \in R{}$ and then take a soft-max to get the policy
+\[
+    \pi(a \vert{} s, \vec{\theta}) = \frac{e^{h(s, a, \vec{\theta})}}{\sum_b e^{h(s, b, \vec{\theta})}}.
+\]
+We call this type of parameterisation \emph{soft-max in action preferences}. (Note the homomorphism: preferences add, while probabilities multiply.) We can learn the preferences any way we like, be it linear or using a deep learning.\\
+
+Some advantages of policy parameterisation:
+\begin{itemize}
+    \item Action-value methods, such as $\epsilon$-greedy action selection, can result give situations in which an arbitrarily small change in the action-values completely changes the policy.
+    \item The soft-max method will approach a deterministic policy over time. If we used action-values then these would approach their (finite) true values, leading to finite probabilities (with the soft-max). Action preferences do not necessarily converge, but instead are driven to produce an optimal stochastic policy.
+    \item In some problems, the best policy may be stochastic. Action-value methods have no natural way of approximating this, whereas it is embedded in this scheme.
+    \item Often the most important reason for choosing a policy based learning method is that policy parameterisation provides a good way to inject prior knowledge into the system.
+\end{itemize}
+
+\subsection{The Policy Gradient Theorem}
+The episodic and continuing cases of the policy gradient theorem have different proofs (since they use different formulations of the expected reward). Here we will first focus on the episodic case, but the results carry over the same.\\
+
+In the episodic case the performance function is the true value of the start state under the current policy
+\[
+    J(\vec{\theta}) = v_{\pi_{\vec{\theta}}}(s_0).
+\]
+In the following we assume no discounting ($\gamma = 1$), but this can be inserted by making the requisite changes (see exercises).\\
+
+The success of the \emph{policy gradient theorem} is that it gives a gradient of the performance function that does not include derivatives of the state distribution. The result for the episodic case is as follows and is derived in the box shown below
+\[
+    \grad_{\vec{\theta}} J(\vec{\theta}) \propto \sum_s \mu(s) \sum_a q_\pi(s, a) \grad_{\vec{\theta}} \pi(a \vert{} s, \vec{\theta}).
+\]\\
+
+\includegraphics[width=\textwidth]{\NotesImages/proof_policy_gradient_episodic.png}\\
+
+\subsection{REINFORCE: Monte Carlo Policy Gradient}
+We now attempt to learn a policy by stochastic gradient ascent on the performance function. To begin, the policy gradient theorem can be stated as 
+\[
+    \grad_{\vec{\theta}}J(\vec{\theta}) = \Epi \left[\sum_a q_\pi(S_t, a) \grad_{\vec{\theta}}\pi(a \vert{} S_t, \vec{\theta}) \right].
+\]
+The \emph{all-actions} method simply samples this expectation to give the update rule
+\[
+    \vec{\theta}_{t+1} = \vec{\theta}_t + \alpha \sum_a \hat{q}(S_t, a, \vec{w})\grad_{\vec{\theta}}\pi(a\vert{}S_t, \vec{\theta}).
+\]
+The classical REINFORCE algorithm involves only $A_t$, rather than a sum over all actions. We proceed
+\begin{align}
+    \grad_{\vec{\theta}} &= \Epi\left[ \sum_a \pi(a\vert{}S_t, \vec{\theta}) q_\pi(S_t, a)\frac{\grad_{\vec{\theta}}\pi(a \vert{} S_t, \vec{\theta})}{\pi(a \vert{} S_t, \vec{\theta})} \right] \\
+  &= \Epi\left[q_\pi(S_t, A_t)\frac{\grad_{\vec{\theta}}\pi(A_t \vert{} S_t, \vec{\theta})}{\pi(A_t \vert{} S_t, \vec{\theta})} \right] \\
+  &= \Epi\left[G_t\frac{\grad_{\vec{\theta}}\pi(A_t \vert{} S_t, \vec{\theta})}{\pi(A_t \vert{} S_t, \vec{\theta})} \right],
+\end{align}
+which yields the REINFORCE update
+\begin{equation}
+    \vec{\theta}_{t+1} = \vec{\theta}_t + \alpha G_t \grad_{\vec{\theta}} \log\pi(A_t\vert{} S_t, \vec{\theta}).
+\end{equation}
+This update moves the parameter vector in the direction of increasing the probability of the action taken proportional to the return and inversely proportional to the probability of the action. It uses the complete return from time $t$, so in this sense is a Monte Carlo algorithm. We refer to the quantity
+\[
+    \grad_{\vec{\theta}} \log\pi(A_t\vert{} S_t, \vec{\theta})
+\]
+as the \emph{eligibility vector}. Pseudocode is given in the box below (complete with discounting). Convergence to a local optimum is guaranteed under the standard stochastic approximation conditions for decreasing $\alpha$. However, since it is a Monte Carlo method, it will likely have high variance which will slow learning.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/REINFORCE_monte_carlo_algorithm}\\
+
+\subsection{REINFORCE with Baseline}
+The policy gradient theorem can be generalised to incorporate a comparison to a \emph{baseline} value $b(s)$ for each state
+\begin{equation}
+    \grad_{\vec{\theta}} J(\vec{\theta}) \propto \sum_s \mu(s) \sum_a \left( q_\pi(s, a) - b(s) \right) \grad_{\vec{\theta}} \pi(a \vert{} s, \vec{\theta}).
+\end{equation}
+The baseline can be a random variable, as long as it doesn't depend on $a$. The update rule then becomes
+\begin{equation}
+    \vec{\theta}_{t+1} = \vec{\theta}_t + \alpha \left( G_t \grad_{\vec{\theta}} - b(S_t) \right) \log\pi(A_t\vert{} S_t, \vec{\theta}).
+\end{equation}
+The idea of the baseline is to reduce variance -- by construction it has no impact on the expected update.\\
+
+A natural choice for the baseline is a learned state-value function $\hat{v}(S_t, \vec{w})$. Pseudocode for Monte Carlo REINFORCE with this baseline (also learned by MC estimation) is given in the box below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/REINFORCE_monte_carlo_baseline_algorithm}\\
+
+This algorithm has two step sizes $\alpha^{\vec{\theta}}$ and $\alpha^{\vec{w}}$. Choosing the step size for the value estimates is relatively easy, for instance in the linear case we have the rule of thumb $\alpha^{\vec{w}} = 1/ \E{}\left[ || \grad_{\vec{w}} \hat{v}(S_t, \vec{w}) ||_\mu^2 \right]$. It is much less clear how to set the step size for the policy parameters.
+
+\subsection{Actor-Critic Methods}
+Although REINFORCE with baseline can use an estimated value function, it is not an actor-critic method because it does not incorporate value estimates through bootstrapping.\\
+
+We present here a one-step actor-critic method that is an analog of TD(0), Sarsa(0) and Q-learning. We replace the full return of REINFORCE with a bootstrapped one-step return:
+\begin{align}
+    \vec{\theta} &= \vec{\theta}_t + \alpha \left(  G_{t:t+1} - \hat{v}(S_t, \vec{w})\right) \frac{\grad_{\vec{\theta}} \pi(A_t \vert{} S_t, \vec{\theta}_t)}{\pi(A_t \vert{} S_t, \vec{\theta}_t)}\\
+    &= \vec{\theta}_t + \alpha \left(  G_{t:t+1} - \gamma\hat{v}(S_{t+1}, \vec{w}) - \hat{v}(S_{t}, \vec{w})\right) \frac{\grad_{\vec{\theta}} \pi(A_t \vert{} S_t, \vec{\theta}_t)}{\pi(A_t \vert{} S_t, \vec{\theta}_t)}\\
+    &= \vec{\theta}_t + \alpha \delta_t \frac{\grad_{\vec{\theta}} \pi(A_t \vert{} S_t, \vec{\theta}_t)}{\pi(A_t \vert{} S_t, \vec{\theta}_t)}
+\end{align}
+with $\delta_t$ as the one-step TD error. The natural method to learn the state-value function in this case would be semi-gradient TD(0). Pseudocode is given in the boxes below for this algorithm and a sister algorithm using eligibility traces.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/one_step_actor_critic_algorithm.png}\\
+
+\includegraphics[width=\textwidth]{\NotesImages/actor_critic_eligibility_traces_algorithm.png}\\
+
+
+\subsection{Policy Gradient for Continuing Problems}
+For continuing problems we need a different formulation. We choose as our performance measure the average rate of reward per time step:
+\begin{align}
+    J(\vec{\theta}) = r(\pi) &= \lim_{h \to \infty} \frac{1}{h} \sum_{t=1}^h \E{}[R_t \vert{} S_0, A_{0:t-1} \sim \pi] \\
+    &= \lim_{t \to \infty} \E{}[R_t \vert{} S_0, A_{0:t-1} \sim \pi] \\
+    &= \sum_s \mu(s) \sum_a \pi(a \vert{} s) \sum_{s', r} p(s', r \vert{} s, a)r,
+\end{align}
+where $\mu$ is the steady distribution under $\pi$, $\mu(s) = \lim_{t \to \infty} P{}(S_t = s \vert{} A_{0:t} \sim \pi)$ which we assume to exist and be independent of $S_0$ (ergodicity). Recall that this is the distribution that is invariant under action selections according to $\pi$:
+\[
+    \sum_s \mu(s) \sum_a \pi(a \vert{} s, \vec{\theta}) p(s' \vert{} s, a) = \mu(s').
+\]
+We also define the values with respect to the differential return:
+\[
+    G_t \doteq R_{t+1} - r(\pi) + R_{t+2} - r(\pi) + R_{t+3} - r(\pi) + \cdots.
+\]
+With these changes the policy gradient theorem remains true (proof given in the book). The forward and backward view equations also remain the same. Pseudocode for the actor-critic algorithm in the continuing case is given below.\\
+
+\includegraphics[width=\textwidth]{\NotesImages/actor_critic_eligibility_traces_continuing.png}
+
+\subsection{Policy Parameterisation for Continuous Actions}
+We simply define a continuous (parameterised) probability distribution over the actions, then do the gradient ascent as above.
+
+
+
+
+
+
+
+

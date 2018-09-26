@@ -110,7 +110,7 @@ Hint: separately for each action compute the derivative of the logarithm first w
 \subsubsection*{A}
 
 \begin{enumerate}[a)]
-    \item $\pi(1 \vert{} S_t, \vec{\theta}_t) = \frac{e^{h(s, 1, \vec{\theta}_t)}}{e^{h(s, 1, \vec{\theta}_t)} + e^{h(s, 0, \vec{\theta}_t)}} = \frac{1}{1 + e^{-\vec{\theta}^\top\vec{x}(s)}}$
+    \item $\pi(1 \vert{} S_t, \vec{\theta}_t) = e^{h(s, 1, \vec{\theta}_t)} / (e^{h(s, 1, \vec{\theta}_t)} + e^{h(s, 0, \vec{\theta}_t)}) = 1 /(1 + e^{-\vec{\theta}^\top\vec{x}(s)}) $
     \item $\vec{\theta}_{t+1} = \vec{\theta}_t + \alpha \gamma^t G_t \grad_{\vec{\theta}_t}\log\pi(a \vert{} S_t, \vec{\theta}_t)$ 
     \item Write $\pi(a \vert{} S_t, \vec{\theta}_t) = g((-1)^a \vec{\theta}_t^\top\vec{x}(s))$ where $a \in \{ 0, 1\}$ and $g$ is the sigmoid function $g(t) = 1 / (1 + e^{-t})$. It's then quite easy to see that 
     \[
