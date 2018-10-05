@@ -2,7 +2,7 @@
 
 In this section we consider the applications of function approximation techniques in reinforcement learning, to learn mappings from states to values. Typically we will consider parametric functional forms, in which case we can achieve a reduction in dimensionality of the problem (number of parameters smaller than state space). In this way, the function generalises between states, as the update of one state impacts the value of another.\\
 
-Function approximation techniques are applicable to partially observable problems, in which the full state space is not available to the agent. A function approximation scheme which is ignores certain aspects of the space behaves just as if those aspects are unobservable.
+Function approximation techniques are applicable to partially observable problems, in which the full state space is not available to the agent. A function approximation scheme which ignores certain aspects of the space behaves just as if those aspects are unobservable.
 
 \subsection{Value-function Approximation}
 Many techniques from supervised learning are applicable to learning value functions from experience, but not all are equipped to deal with the non-stationarity that often occurs in RL. In RL it is also important to be able to learn online.\\
@@ -86,7 +86,7 @@ At the TD fixed point (in the continuing case) it has been proven that $\VE$ is 
 \begin{equation}
     \VE(\vec{w}_{\text{TD}}) \leq \frac{1}{1 - \gamma} \min_{\vec{w}} \VE(\vec{w}).
 \end{equation}
-It is often the case that $\gamma$ is close to 1, so this region can be quite large. The TD method jas substantial loss in asymptotic performance. Regardless of this, it still has much lower variance than MC methods and can thus be faster. The desired update method will depend on the task at hand.\\
+It is often the case that $\gamma$ is close to 1, so this region can be quite large. The TD method has substantial loss in asymptotic performance. Regardless of this, it still has much lower variance than MC methods and can thus be faster. The desired update method will depend on the task at hand.\\
 
 \subsubsection*{Other Linear Updates}
 Linear semi-gradient DP $U_t = \sum_a \pi(a \vert{} S_t) \sum_{s', r} p(s', r \vert{} S_t, a) [r + \gamma \hat{v}(s', \vec{w}_t)]$ with updates according to the on-policy distribution also converged to the TD fixed point. There are convergence results for other step methods we have considered too. Critical to all of these is that updates are taken according to the on-policy distribution. For other update distributions, bootstrapping methods can diverge to infinity. $n$-step semi-gradient TD is given in the box below.\\
@@ -160,7 +160,7 @@ Using kernels to define similarities between states for generalisation, e.g. ker
 \subsection{Looking Deeper at On-policy Learning: Interest and Emphasis}
 Sometimes we are not equally interested in each state, so limited resources can be better spent than to treat every state equally. For instance, in discounted episodic problems we might be more interested in starting states because later rewards are discounted. \\
 
-Introduce the scalar random variable $I_t \geq 0 $ called $interest$, the degree of interest we have in accurately valuing the state at time $t$. If we don't cared al all about the state then $I_t = 0$, if we fully care then it might be 1 (but it is formally allowed to take any non-negative value). The interest can be set in any causal way. The distribution in our loss function $\VE$ is then defined as the distribution of states encountered when following the target policy, weighted by the interest.\\
+Introduce the scalar random variable $I_t \geq 0 $ called $interest$, the degree of interest we have in accurately valuing the state at time $t$. If we don't care at all about the state then $I_t = 0$, if we fully care then it might be 1 (but it is formally allowed to take any non-negative value). The interest can be set in any causal way. The distribution in our loss function $\VE$ is then defined as the distribution of states encountered when following the target policy, weighted by the interest.\\
 
 We also introduce the scalar random variable $M_t \geq 0$, called the \emph{emphasis}. The emphasis multiplies the learning update at each time-step. For general $n$-step learning
 \begin{equation}
