@@ -85,11 +85,11 @@ with the models $\mu(s, \vec{\theta}_\mu) = \vec{\theta}_\mu^\top\vec{x}_\mu(s)$
 \]
 so we have 
 \[
-    \grad_{\vec{\theta}_\mu}\log\pi(a \vert{}s, \theta) = \frac{a - \mu}{\sigma^2}\grad_{\vec{\theta}_\mu}\mu(s, \vec{\theta}_\mu) = \frac{a - \mu}{\sigma^2} \vec{x}_\mu(s)
+    \grad_{\vec{\theta}_\mu}\log\pi(a \vert{}s, \theta) = \frac{a - \mu}{\sigma^3}\grad_{\vec{\theta}_\mu}\mu(s, \vec{\theta}_\mu) = \frac{a - \mu}{\sigma^3} \vec{x}_\mu(s)
 \]
 and
 \[
-    \grad_{\vec{\theta}_\sigma}\log\pi(a \vert{} s, \vec{\theta}) = - \frac{\grad_{\vec{\theta}_\sigma} \sigma}{\sigma} + \frac{(a - \mu)^2}{\sigma^2}\grad_{\vec{\theta}_\sigma}\sigma = \left( \frac{(a - \mu)^2}{\sigma^2} - 1 \right)\vec{x}_\sigma(s) 
+    \grad_{\vec{\theta}_\sigma}\log\pi(a \vert{} s, \vec{\theta}) = - \frac{\grad_{\vec{\theta}_\sigma} \sigma}{\sigma} + \frac{(a - \mu)^2}{\sigma^3}\grad_{\vec{\theta}_\sigma}\sigma = \left( \frac{(a - \mu)^2}{\sigma^2} - 1 \right)\vec{x}_\sigma(s) 
 \]
 because $\grad_{\vec{\theta}_\sigma}\sigma = \vec{x}_\sigma(s) \sigma$.
 
