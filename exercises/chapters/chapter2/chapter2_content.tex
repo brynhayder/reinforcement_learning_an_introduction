@@ -12,7 +12,7 @@ In $\varepsilon$-greedy action selection, for the case of two actions and $\vare
 Consider a $k$-armed bandit problem with $k = 4$ actions, denoted 1, 2, 3, and 4. Consider applying to this problem a bandit algorithm using $\varepsilon$-greedy action selection, sample-average action-value estimates, and initial estimates of $Q_1(a) = 0$, for all $a$. Suppose the initial sequence of actions and rewards is $A_1 = 1$, $R_1 =1$, $A_2 =2$, $R_2 =1$, $A_3 =2$, $R_3 =2$, $A_4 =2$, $R_4 =2$, $A_5 =3$, $R_5 =0$. On some of these time steps the $\varepsilon$ case may have occurred, causing an action to be selected at random. On which time steps did this definitely occur? On which time steps could this possibly have occurred?
 
 \subsubsection*{A}
-$A_2$ and $A_5$ were definitely exploratory. Any of the others \emph{could} have been exploratory.
+$A_4$ and $A_5$ were definitely exploratory. Any of the others \emph{could} have been exploratory.
 
 
 \subsection{Exercise 2.3}
