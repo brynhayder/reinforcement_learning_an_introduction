@@ -1,6 +1,8 @@
 # Reinforcement Learning: An Introduction
 Notes and exercise solutions to the second edition of Sutton &amp; Barto's book.
 
+**Some of the solutions have mistakes, so be mindful! If you spot a mistake, please raise an issue and (at some point...) I'll fix it.**
+
 -----
 
 Notes: 
